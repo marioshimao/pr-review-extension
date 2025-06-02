@@ -1,0 +1,40 @@
+{
+    "manifestVersion": 1,
+    "id": "validador-pr-task",
+    "name": "Validador de Pull Request",
+    "version": "0.1.0",
+    "publisher": "MarioKShimao",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "description": "Task para validação automatizada de código em pull requests com agente de IA",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "icons": {
+        "default": "images/extension-icon.png"
+    },
+    "files": [
+        {
+            "path": "buildandreleasetask"
+        },
+        {
+            "path": "images",
+            "addressable": true
+        }
+    ],
+    "contributions": [
+        {
+            "id": "validador-pr-build-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "buildandreleasetask"
+            }
+        }
+    ]
+}

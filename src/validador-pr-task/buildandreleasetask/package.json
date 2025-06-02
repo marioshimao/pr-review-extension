@@ -1,0 +1,21 @@
+{
+    "name": "validador-pr-task",
+    "version": "0.1.0",
+    "description": "Task para validação de PR com IA",
+    "main": "index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {
+        "azure-devops-node-api": "^15.1.0",
+        "azure-pipelines-task-lib": "^4.0.0",
+        "openai": "^4.35.0"
+    },
+    "devDependencies": {
+        "@types/node": "^16.0.0",
+        "@types/q": "^1.5.8",
+        "typescript": "^5.0.0"
+    }
+}

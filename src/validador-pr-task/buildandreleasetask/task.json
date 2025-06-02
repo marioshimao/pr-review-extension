@@ -1,0 +1,102 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+    "id": "e3f86985-ab39-44b5-a6ec-ea0a893c25e8",
+    "name": "ValidadorPR",
+    "friendlyName": "Validador de Pull Request",
+    "description": "Analisa o código fonte e fornece feedback sobre qualidade de código",
+    "helpMarkDown": "Use esta task para validar o código automaticamente usando IA",
+    "category": "Utility",
+    "author": "Your Name",
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Validar PR: $(message)",    "inputs": [
+        {
+            "name": "repositoryPath",
+            "type": "string",
+            "label": "Caminho do Repositório",
+            "defaultValue": "$(Build.SourcesDirectory)",
+            "required": true,
+            "helpMarkDown": "Caminho do repositório a ser analisado"
+        },
+        {
+            "name": "excludePatterns",
+            "type": "multiLine",
+            "label": "Padrões de exclusão",
+            "defaultValue": "**/*.md\n**/*.json\n**/*.png\n**/*.jpg",
+            "required": false,
+            "helpMarkDown": "Padrões glob para excluir arquivos da análise (um por linha)"
+        },
+        {
+            "name": "failOnIssues",
+            "type": "boolean",
+            "label": "Falhar o build se encontrar problemas",
+            "defaultValue": "false",
+            "required": false,
+            "helpMarkDown": "Se marcado, o build falhará se forem encontrados problemas sérios no código"
+        },
+        {
+            "name": "outputFilePath",
+            "type": "string",
+            "label": "Caminho do arquivo de saída",
+            "defaultValue": "$(Build.ArtifactStagingDirectory)/code-review-report.md",
+            "required": false,
+            "helpMarkDown": "Caminho para salvar o relatório de análise"
+        },
+        {
+            "name": "azure_devops_token",
+            "type": "string",
+            "label": "Token de Acesso do Azure DevOps",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Token de acesso pessoal (PAT) para acessar o repositório do Azure DevOps. Se não fornecido, tenta usar o System.AccessToken"
+        },
+        {
+            "name": "api_key",
+            "type": "string",
+            "label": "API Key",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "Chave de API para o serviço de IA"
+        },
+        {
+            "name": "api_endpoint",
+            "type": "string",
+            "label": "API Endpoint (Azure OpenAI)",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Endpoint da API Azure OpenAI (necessário apenas para Azure OpenAI)"
+        },
+        {
+            "name": "api_version",
+            "type": "string",
+            "label": "API Version (Azure OpenAI)",
+            "defaultValue": "2023-05-15",
+            "required": false,
+            "helpMarkDown": "Versão da API do Azure OpenAI (necessário apenas para Azure OpenAI)"
+        },
+        {
+            "name": "ai_model",
+            "type": "string",
+            "label": "Modelo de IA",
+            "defaultValue": "gpt-4",
+            "required": false,
+            "helpMarkDown": "Nome do modelo de IA ou deployment a ser usado"
+        },
+        {
+            "name": "additional_prompts",
+            "type": "multiLine",
+            "label": "Prompts Adicionais",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "Prompts adicionais para a análise, separados por vírgula"
+        }
+    ],
+    "execution": {
+        "Node20_1": {
+            "target": "index.js"
+        }
+    }
+}
