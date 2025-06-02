@@ -138,7 +138,8 @@ class ConfigService {
         if (this.codeAnalyzer) {
             return this.codeAnalyzer;
         }
-        try { // Recuperar configurações para o OpenAI
+        try {
+            // Recuperar configurações para o OpenAI
             const apiKey = tl.getInput('apiKey', true);
             const azureApiEndpoint = tl.getInput('apiEndpoint', false);
             const azureApiVersion = tl.getInput('apiVersion', false);
