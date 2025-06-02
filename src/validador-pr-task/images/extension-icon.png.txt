@@ -1,6 +1,0 @@
-# Ícone da extensão
-# Este é um arquivo de texto que representa um ícone
-# Em um cenário real, você deve criar um arquivo .png real de 128x128 pixels
-# Este arquivo é apenas um placeholder para a demonstração
-
-Substitua este arquivo com uma imagem real de ícone em formato PNG.
