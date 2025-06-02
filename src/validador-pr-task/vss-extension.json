@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "validador-pr-task",
     "name": "Validador de Pull Request",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "publisher": "MarioKShimao",
     "targets": [
         {
@@ -22,13 +22,12 @@
         "AI",
         "Code Review",
         "DevOps"
-    ],
-    "content": {
+    ],    "content": {
         "details": {
             "path": "README.md"
         },
         "license": {
-            "path": "../LICENSE"
+            "path": "LICENSE"
         }
     },
     "links": {
@@ -64,9 +63,8 @@
         {
             "path": "README.md",
             "addressable": true
-        },
-        {
-            "path": "../LICENSE",
+        },        {
+            "path": "LICENSE",
             "addressable": true
         }
     ],
