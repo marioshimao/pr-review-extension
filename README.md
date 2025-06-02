@@ -44,10 +44,6 @@ Consulte o arquivo [README da extensão](src/validador-pr-task/README.md) para i
 
 Consulte o arquivo [como-testar-a-extensao.md](como-testar-a-extensao.md) para instruções sobre como testar a extensão localmente e no Azure DevOps.
 
-## Desenvolvendo
-
-O código foi desenvolvido seguindo os princípios da Arquitetura Limpa (Clean Architecture). Para mais informações sobre a estrutura e design da aplicação, consulte o arquivo [INSTRUCOES-REFATORACAO.md](src/validador-pr-task/buildandreleasetask/INSTRUCOES-REFATORACAO.md).
-
 ## Contribuição
 
 Contribuições são bem-vindas! Por favor, siga estas etapas para contribuir:
