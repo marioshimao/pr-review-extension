@@ -1,146 +1,46 @@
+/**
+ * Ponto de entrada principal da task
+ * Esta implementação segue os princípios da Arquitetura Limpa (Clean Architecture)
+ * 
+ * A estrutura do código está organizada em camadas:
+ * - Entidades: Objetos de negócio (CodeIssue, AnalysisReport)
+ * - Casos de Uso: Implementam a lógica de negócio (AnalyzeCodeUseCase, ReportPullRequestIssuesUseCase)
+ * - Interfaces: Definem contratos para adaptadores (IRepository, ICodeAnalyzer, IFileService, ILogService)
+ * - Adaptadores: Implementam as interfaces para acessar recursos externos (AzureDevOpsRepository, OpenAICodeAnalyzer)
+ * - Controladores: Coordenam os casos de uso (TaskController)
+ * - Configuração: Gerencia dependências e configurações (ConfigService)
+ */
 import * as tl from 'azure-pipelines-task-lib/task';
-import * as path from 'path';
-import * as fs from 'fs';
-import { OpenAI, AzureOpenAI } from 'openai';
-import { RepositoryAzureDevops } from './repositoryAzureDevops';
+import { ConfigService } from './config/ConfigService';
+import { TaskController } from './controllers/TaskController';
+ * - Entidades: Objetos de negócio (CodeIssue, AnalysisReport)
+ * - Casos de Uso: Implementam a lógica de negócio (AnalyzeCodeUseCase, ReportPullRequestIssuesUseCase)
+ * - Interfaces: Definem contratos para adaptadores (IRepository, ICodeAnalyzer, IFileService, ILogService)
+ * - Adaptadores: Implementam as interfaces para acessar recursos externos (AzureDevOpsRepository, OpenAICodeAnalyzer)
+ * - Controladores: Coordenam os casos de uso (TaskController)
+ * - Configuração: Gerencia dependências e configurações (ConfigService)
+ */
 
+import * as tl from 'azure-pipelines-task-lib/task';
+import { ConfigService } from './config/ConfigService';
+import { TaskController } from './controllers/TaskController';
+
+/**
+ * Função principal que inicializa e executa a task
+ */
 async function run(): Promise<void> {
     try {
-        // Recuperar os inputs da task
-        const repositoryPath: string = tl.getPathInput('repositoryPath', true, true)!;
-        const excludePatterns: string[] = tl.getDelimitedInput('excludePatterns', '\n', false);
-        const failOnIssues: boolean = tl.getBoolInput('failOnIssues', false);
-        const outputFilePath: string = tl.getInput('outputFilePath', false) || '';
-        const apiKey = tl.getInput('api_key', true)!;
-        const azureApiEndpoint = tl.getInput('api_endpoint', false)!;
-        const azureApiVersion = tl.getInput('api_version', false)!;
-        const azureModelDeployment = tl.getInput('ai_model', false)!;
-        const additionalPrompt = tl.getInput('additional_prompts', false)?.split(',');
-
-        console.info(`azureApiEndpoint: ${azureApiEndpoint}`);
-        console.info(`azureApiVersion: ${azureApiVersion}`);
-        console.info(`azureModelDeployment: ${azureModelDeployment}`);
-        console.info(`Prompts adicionais: ${additionalPrompt}`);
-
-        console.log(`Analisando código em: ${repositoryPath}`);
-        console.log(`Padrões de exclusão: ${excludePatterns.join(', ')}`);
+        // Inicializar serviço de configuração
+        const configService = new ConfigService();
         
-        // Configurar as variáveis de ambiente para OpenAI
-        process.env.OPENAI_API_KEY = apiKey;
-        process.env.AZURE_OPENAI_API_KEY = apiKey;
-        process.env.AZURE_OPENAI_ENDPOINT = azureApiEndpoint;
-        process.env.AZURE_OPENAI_API_VERSION = azureApiVersion;
-        process.env.AZURE_OPENAI_DEPLOYMENT_NAME = azureModelDeployment;
+        // Inicializar o controlador com as dependências necessárias
+        const controller = new TaskController(configService);
         
-        // Inicializar o repositório do Azure DevOps (se disponível)
-        const repository = await initializeRepository();
-        
-        let filesToAnalyze: string[] = [];
-        
-        // Se estamos em um contexto de Pull Request e o repositório foi inicializado com sucesso
-        if (repository && tl.getVariable('System.PullRequest.PullRequestId')) {
-            console.log('Detectado contexto de Pull Request. Baixando arquivos alterados...');
-            
-            // Criar um diretório temporário para os arquivos do PR
-            const prFilesDir = path.join(repositoryPath, '.pr_files_temp');
-            
-            // Baixar os arquivos alterados no PR
-            filesToAnalyze = await repository.downloadPullRequestFiles(prFilesDir, 
-                // Converter padrões de exclusão para inclusão (negando-os)
-                excludePatterns.length > 0 
-                    ? excludePatterns.map(pattern => `!${pattern}`) 
-                    : undefined
-            );
-            
-            console.log(`Baixados ${filesToAnalyze.length} arquivos do PR para análise.`);
-        } else {
-            // Caso não seja um PR ou não tenha sido possível inicializar o repositório,
-            // use a abordagem padrão de busca local de arquivos
-            console.log('Usando busca local de arquivos...');
-            filesToAnalyze = findFiles(repositoryPath, excludePatterns);
-        }
-          console.log(`Encontrados ${filesToAnalyze.length} arquivos para análise.`);
-        
-        // Analisar os arquivos e encontrar problemas
-        const codeIssues = await analyzeFiles(filesToAnalyze, additionalPrompt);
-        
-        // Criar relatório
-        let report = '# Relatório de Análise de Código\n\n';
-        
-        if (codeIssues.length === 0) {
-            report += '✅ Todas as melhores práticas e regras foram seguidas.\n';
-        } else {
-            report += `## Problemas Encontrados (${codeIssues.length})\n\n`;
-            
-            codeIssues.forEach(issue => {
-                report += `- **[${issue.file}:${issue.line}]** ${issue.message}\n`;
-            });
-        }
-
-        // Salvar o relatório
-        if (outputFilePath) {
-            const folder = path.dirname(outputFilePath);
-            if (!fs.existsSync(folder)) {
-                fs.mkdirSync(folder, { recursive: true });
-            }
-            fs.writeFileSync(outputFilePath, report);
-            console.log(`Relatório salvo em: ${outputFilePath}`);
-        }
-
-        // Exibir informações no console
-        console.log(`\n${report}`);
-        
-        // Se estamos em um contexto de PR e temos o repositório configurado, adicionar comentários
-        if (repository && tl.getVariable('System.PullRequest.PullRequestId')) {
-            try {
-                console.log('Adicionando comentários ao PR...');
-                
-                // Adicionar comentário resumo ao PR
-                await repository.addPullRequestComment(report);
-                
-                // Adicionar comentários em linha para cada problema
-                for (const issue of codeIssues) {
-                    // Extrair o caminho relativo ao repositório
-                    const relativeFilePath = path.relative(repositoryPath, issue.file);
-                    
-                    // Comentar no arquivo específico e linha
-                    await repository.addPullRequestComment(
-                        issue.message,
-                        relativeFilePath,
-                        issue.line
-                    );
-                }
-                
-                // Definir o status do PR baseado nos problemas encontrados
-                if (codeIssues.length > 0) {
-                    if (failOnIssues) {
-                        await repository.setPullRequestStatus('rejected', 
-                            `Encontrados ${codeIssues.length} problemas que precisam ser corrigidos.`);
-                    } else {
-                        await repository.setPullRequestStatus('waiting', 
-                            `Encontrados ${codeIssues.length} problemas que precisam de atenção.`);
-                    }
-                } else {
-                    await repository.setPullRequestStatus('approved', 
-                        'Nenhum problema encontrado na análise de código.');
-                }
-                
-                console.log('Comentários adicionados ao PR com sucesso.');
-            } catch (commentError: any) {
-                console.warn(`Erro ao adicionar comentários ao PR: ${commentError.message}`);
-                // Não falhar o build por causa disso
-            }
-        }
-
-        // Decidir se deve falhar o build
-        if (failOnIssues && codeIssues.length > 0) {
-            tl.setResult(tl.TaskResult.Failed, `Encontrados ${codeIssues.length} problemas no código.`);
-            return;
-        }
-
-        tl.setResult(tl.TaskResult.Succeeded, 'Análise de código concluída com sucesso.');
-    }
-    catch (err: any) {
+        // Executar a task
+        await controller.execute();
+    } catch (err: any) {
+        console.error(`Erro fatal durante inicialização da task: ${err.message}`);
+        console.error(err.stack);
         tl.setResult(tl.TaskResult.Failed, err.message);
     }
 }
