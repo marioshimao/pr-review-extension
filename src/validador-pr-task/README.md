@@ -111,4 +111,4 @@ Esta extensão está licenciada sob a licença MIT. Veja o arquivo [LICENSE](../
 
 ## Suporte
 
-Se você encontrar algum problema ou tiver sugestões, por favor abra uma issue no [repositório do projeto](https://github.com/YourGitHubUsername/validador-pr-azure-devops/issues).
+Se você encontrar algum problema ou tiver sugestões, por favor abra uma issue no [repositório do projeto](https://github.com/marioshimao/pr-review-extension/issues).

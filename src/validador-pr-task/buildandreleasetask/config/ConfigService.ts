@@ -87,7 +87,25 @@ export class ConfigService {
 
         try {
             // Recuperar informações do ambiente para configuração do repositório
-            const organization = tl.getVariable('System.TeamFoundationCollectionUri')?.split('/').pop() || '';
+            const collectionUri = tl.getVariable('System.TeamFoundationCollectionUri') || '';
+            // Extrair o organization name do URI, considerando diferentes formatos possíveis
+            let organization = '';
+            try {
+                const url = new URL(collectionUri);
+                if (url.hostname.endsWith('.visualstudio.com')) {
+                    // Format: https://aglbr.visualstudio.com/
+                    organization = url.hostname.split('.')[0];
+                } else if (url.hostname === 'dev.azure.com') {
+                    // Format: https://dev.azure.com/aglbr/
+                    const pathParts = url.pathname.split('/').filter(p => p);
+                    if (pathParts.length > 0) {
+                        organization = pathParts[0];
+                    }
+                }
+            } catch (e) {
+                this.logService.warn(`Erro ao extrair organization do URI: ${collectionUri}`);
+            }
+
             const project = tl.getVariable('System.TeamProject') || '';
             const repositoryId = tl.getVariable('Build.Repository.ID') || '';
               // O token de acesso precisa ter permissão para usar a API do Azure DevOps
