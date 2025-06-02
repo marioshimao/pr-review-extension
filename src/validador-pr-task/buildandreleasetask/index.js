@@ -49,11 +49,11 @@ async function run() {
         const azureApiEndpoint = tl.getInput('api_endpoint', false);
         const azureApiVersion = tl.getInput('api_version', false);
         const azureModelDeployment = tl.getInput('ai_model', false);
-        const prompt = tl.getInput('additional_prompts', false)?.split(',');
+        const additionalPrompt = tl.getInput('additional_prompts', false)?.split(',');
         console.info(`azureApiEndpoint: ${azureApiEndpoint}`);
         console.info(`azureApiVersion: ${azureApiVersion}`);
         console.info(`azureModelDeployment: ${azureModelDeployment}`);
-        console.info(`Prompts adicionais: ${prompt}`);
+        console.info(`Prompts adicionais: ${additionalPrompt}`);
         console.log(`Analisando código em: ${repositoryPath}`);
         console.log(`Padrões de exclusão: ${excludePatterns.join(', ')}`);
         // Configurar as variáveis de ambiente para OpenAI
@@ -86,7 +86,7 @@ async function run() {
         }
         console.log(`Encontrados ${filesToAnalyze.length} arquivos para análise.`);
         // Analisar os arquivos e encontrar problemas
-        const codeIssues = await analyzeFiles(filesToAnalyze);
+        const codeIssues = await analyzeFiles(filesToAnalyze, additionalPrompt);
         // Criar relatório
         let report = '# Relatório de Análise de Código\n\n';
         if (codeIssues.length === 0) {
@@ -214,7 +214,7 @@ function findFiles(rootPath, excludePatterns) {
     }
 }
 // Função para analisar arquivos com OpenAI
-async function analyzeFiles(files) {
+async function analyzeFiles(files, additionalPrompts) {
     const issues = [];
     try {
         // Configurar cliente OpenAI
@@ -246,14 +246,23 @@ async function analyzeFiles(files) {
                 let retryCount = 0;
                 let success = false;
                 while (!success && retryCount < maxRetries) {
-                    try {
+                    try { // Construir o conteúdo do prompt do sistema
+                        let systemContent = "Você é um especialista em revisão de código. Analise o código a seguir e identifique problemas de segurança, performance, boas práticas e manutenibilidade. Formate a saída em JSON com os campos 'line', 'message' e 'severity' (high, medium, low).";
+                        // Adicionar prompts adicionais, se existirem
+                        if (additionalPrompts && additionalPrompts.length > 0) {
+                            const validPrompts = additionalPrompts.filter(prompt => prompt && prompt.trim() !== '');
+                            if (validPrompts.length > 0) {
+                                systemContent += "\n\nConsiderações adicionais:\n" + validPrompts.map(p => `- ${p.trim()}`).join('\n');
+                                console.log(`Adicionando ${validPrompts.length} prompts adicionais à análise de ${file}`);
+                            }
+                        }
                         // Enviar para análise
                         const response = await openai.chat.completions.create({
                             model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4",
                             messages: [
                                 {
                                     role: "system",
-                                    content: "Você é um especialista em revisão de código. Analise o código a seguir e identifique problemas de segurança, performance, boas práticas e manutenibilidade. Formate a saída em JSON com os campos 'line', 'message' e 'severity' (high, medium, low)."
+                                    content: systemContent
                                 },
                                 {
                                     role: "user",
