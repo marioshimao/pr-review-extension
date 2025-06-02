@@ -55,7 +55,7 @@ export class ConfigService {
             const excludePatterns: string[] = tl.getDelimitedInput('excludePatterns', '\n', false);
             const failOnIssues: boolean = tl.getBoolInput('failOnIssues', false);
             const outputFilePath: string = tl.getInput('outputFilePath', false) || '';
-            const additionalPrompts = tl.getInput('additional_prompts', false)?.split(',');
+            const additionalPrompts = tl.getInput('additionalPrompts', false)?.split(',');
             
             // Verificar se estamos em um contexto de Pull Request
             const isPullRequestContext = !!tl.getVariable('System.PullRequest.PullRequestId');
@@ -90,9 +90,8 @@ export class ConfigService {
             const organization = tl.getVariable('System.TeamFoundationCollectionUri')?.split('/').pop() || '';
             const project = tl.getVariable('System.TeamProject') || '';
             const repositoryId = tl.getVariable('Build.Repository.ID') || '';
-            
-            // O token de acesso precisa ter permissão para usar a API do Azure DevOps
-            const accessToken = tl.getVariable('System.AccessToken') || tl.getInput('azure_devops_token', false) || '';
+              // O token de acesso precisa ter permissão para usar a API do Azure DevOps
+            const accessToken = tl.getVariable('System.AccessToken') || tl.getInput('azureDevopsToken', false) || '';
             
             // Verificar se o PR ID está disponível (usado em builds de PR)
             const pullRequestIdString = tl.getVariable('System.PullRequest.PullRequestId');
@@ -144,12 +143,11 @@ export class ConfigService {
             return this.codeAnalyzer;
         }
 
-        try {
-            // Recuperar configurações para o OpenAI
-            const apiKey = tl.getInput('api_key', true)!;
-            const azureApiEndpoint = tl.getInput('api_endpoint', false);
-            const azureApiVersion = tl.getInput('api_version', false);
-            const azureModelDeployment = tl.getInput('ai_model', false);
+        try {            // Recuperar configurações para o OpenAI
+            const apiKey = tl.getInput('apiKey', true)!;
+            const azureApiEndpoint = tl.getInput('apiEndpoint', false);
+            const azureApiVersion = tl.getInput('apiVersion', false);
+            const azureModelDeployment = tl.getInput('aiModel', false);
 
             // Configurar analisador
             if (azureApiEndpoint && azureApiVersion) {
