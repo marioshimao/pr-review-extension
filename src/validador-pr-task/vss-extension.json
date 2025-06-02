@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "validador-pr-task",
     "name": "Validador de Pull Request",
-    "version": "0.1.3",
+    "version": "0.1.5",
     "publisher": "MarioKShimao",
     "targets": [
         {
@@ -21,8 +21,8 @@
         "Pull Request",
         "AI",
         "Code Review",
-        "DevOps"
-    ],    "content": {
+        "DevOps"    ],
+    "content": {
         "details": {
             "path": "README.md"
         },
@@ -32,21 +32,21 @@
     },
     "links": {
         "home": {
-            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops"
+            "uri": "https://github.com/marioshimao/pr-review-extension"
         },
         "getstarted": {
-            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/blob/main/como-testar-a-extensao.md"
+            "uri": "https://github.com/marioshimao/pr-review-extension/blob/main/como-testar-a-extensao.md"
         },
         "support": {
-            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/issues"
+            "uri": "https://github.com/marioshimao/pr-review-extension/issues"
         },
         "license": {
-            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/blob/main/LICENSE"
+            "uri": "https://github.com/marioshimao/pr-review-extension/blob/main/LICENSE"
         }
     },
     "repository": {
         "type": "git",
-        "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops"
+        "uri": "https://github.com/marioshimao/pr-review-extension"
     },
     "public": true,
     "galleryFlags": [
