@@ -3,16 +3,18 @@
     "id": "e3f86985-ab39-44b5-a6ec-ea0a893c25e8",
     "name": "ValidadorPR",
     "friendlyName": "Validador de Pull Request",
-    "description": "Analisa o código fonte e fornece feedback sobre qualidade de código",
-    "helpMarkDown": "Use esta task para validar o código automaticamente usando IA",
+    "description": "Analisa o código fonte e fornece feedback sobre qualidade de código usando IA",
+    "helpMarkDown": "[Saiba mais sobre esta task](https://github.com/YourGitHubUsername/validador-pr-azure-devops)",
     "category": "Utility",
-    "author": "Your Name",
+    "author": "MarioKShimao",
+    "preview": false,
     "version": {
         "Major": 0,
         "Minor": 1,
         "Patch": 0
     },
-    "instanceNameFormat": "Validar PR: $(message)",    "inputs": [
+    "instanceNameFormat": "Validar PR: $(message)",
+    "inputs": [
         {
             "name": "repositoryPath",
             "type": "string",
@@ -46,7 +48,7 @@
             "helpMarkDown": "Caminho para salvar o relatório de análise"
         },
         {
-            "name": "azure_devops_token",
+            "name": "azureDevopsToken",
             "type": "string",
             "label": "Token de Acesso do Azure DevOps",
             "defaultValue": "",
@@ -54,7 +56,7 @@
             "helpMarkDown": "Token de acesso pessoal (PAT) para acessar o repositório do Azure DevOps. Se não fornecido, tenta usar o System.AccessToken"
         },
         {
-            "name": "api_key",
+            "name": "apiKey",
             "type": "string",
             "label": "API Key",
             "defaultValue": "",
@@ -62,7 +64,7 @@
             "helpMarkDown": "Chave de API para o serviço de IA"
         },
         {
-            "name": "api_endpoint",
+            "name": "apiEndpoint",
             "type": "string",
             "label": "API Endpoint (Azure OpenAI)",
             "defaultValue": "",
@@ -70,7 +72,7 @@
             "helpMarkDown": "Endpoint da API Azure OpenAI (necessário apenas para Azure OpenAI)"
         },
         {
-            "name": "api_version",
+            "name": "apiVersion",
             "type": "string",
             "label": "API Version (Azure OpenAI)",
             "defaultValue": "2023-05-15",
@@ -78,7 +80,7 @@
             "helpMarkDown": "Versão da API do Azure OpenAI (necessário apenas para Azure OpenAI)"
         },
         {
-            "name": "ai_model",
+            "name": "aiModel",
             "type": "string",
             "label": "Modelo de IA",
             "defaultValue": "gpt-4",
@@ -86,7 +88,7 @@
             "helpMarkDown": "Nome do modelo de IA ou deployment a ser usado"
         },
         {
-            "name": "additional_prompts",
+            "name": "additionalPrompts",
             "type": "multiLine",
             "label": "Prompts Adicionais",
             "defaultValue": "",

@@ -60,13 +60,13 @@ steps:
       **/node_modules/**
     failOnIssues: false
     outputFilePath: '$(Build.ArtifactStagingDirectory)/code-review-report.md'
-    azure_devops_token: '$(System.AccessToken)'
-    api_key: '$(OpenAI.ApiKey)'
+    azureDevopsToken: '$(System.AccessToken)'
+    apiKey: '$(OpenAI.ApiKey)'
     # Para Azure OpenAI (opcional)
-    # api_endpoint: '$(AzureOpenAI.Endpoint)'
-    # api_version: '2023-05-15'
-    # ai_model: 'gpt-deployment'
-    additional_prompts: 'Foque em problemas de segurança,Verifique boas práticas em TypeScript'
+    # apiEndpoint: '$(AzureOpenAI.Endpoint)'
+    # apiVersion: '2023-05-15'
+    # aiModel: 'gpt-deployment'
+    additionalPrompts: 'Foque em problemas de segurança,Verifique boas práticas em TypeScript'
 ```
 
 ## Arquitetura
@@ -107,8 +107,8 @@ Contribuições são bem-vindas! Por favor, siga estas etapas para contribuir:
 
 ## Licença
 
-[Incluir informação de licença]
+Esta extensão está licenciada sob a licença MIT. Veja o arquivo [LICENSE](../../LICENSE) para detalhes.
 
 ## Suporte
 
-[Incluir informação de suporte]
+Se você encontrar algum problema ou tiver sugestões, por favor abra uma issue no [repositório do projeto](https://github.com/YourGitHubUsername/validador-pr-azure-devops/issues).

@@ -16,12 +16,57 @@
     "icons": {
         "default": "images/extension-icon.png"
     },
+    "tags": [
+        "Code Quality",
+        "Pull Request",
+        "AI",
+        "Code Review",
+        "DevOps"
+    ],
+    "content": {
+        "details": {
+            "path": "README.md"
+        },
+        "license": {
+            "path": "../LICENSE"
+        }
+    },
+    "links": {
+        "home": {
+            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops"
+        },
+        "getstarted": {
+            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/blob/main/como-testar-a-extensao.md"
+        },
+        "support": {
+            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/issues"
+        },
+        "license": {
+            "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops/blob/main/LICENSE"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/YourGitHubUsername/validador-pr-azure-devops"
+    },
+    "public": true,
+    "galleryFlags": [
+        "Public"
+    ],
     "files": [
         {
             "path": "buildandreleasetask"
         },
         {
             "path": "images",
+            "addressable": true
+        },
+        {
+            "path": "README.md",
+            "addressable": true
+        },
+        {
+            "path": "../LICENSE",
             "addressable": true
         }
     ],

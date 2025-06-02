@@ -35,14 +35,14 @@ process.env.INPUT_FAILONISSUES = 'false';
 process.env.INPUT_OUTPUTFILEPATH = path.resolve(__dirname, '../test-report.md');
 
 // Você precisa fornecer sua API key aqui
-process.env.INPUT_API_KEY = 'SUA_API_KEY_AQUI'; // Substitua pelo valor real
+process.env.INPUT_APIKEY = 'SUA_API_KEY_AQUI'; // Substitua pelo valor real
 
 // Se estiver usando Azure OpenAI, descomente estas linhas e preencha os valores
-// process.env.INPUT_API_ENDPOINT = 'https://seurecurso.openai.azure.com/';
-// process.env.INPUT_API_VERSION = '2023-05-15';
-// process.env.INPUT_AI_MODEL = 'seu-deployment-name';
+// process.env.INPUT_APIENDPOINT = 'https://seurecurso.openai.azure.com/';
+// process.env.INPUT_APIVERSION = '2023-05-15';
+// process.env.INPUT_AIMODEL = 'seu-deployment-name';
 
-process.env.INPUT_ADDITIONAL_PROMPTS = 'Foque em problemas de segurança,Verifique boas práticas em TypeScript';
+process.env.INPUT_ADDITIONALPROMPTS = 'Foque em problemas de segurança,Verifique boas práticas em TypeScript';
 
 // Executar a task
 require('./index');
@@ -101,11 +101,11 @@ steps:
       **/node_modules/**
     failOnIssues: false
     outputFilePath: '$(Build.ArtifactStagingDirectory)/code-review-report.md'
-    api_key: '$(OPENAI_API_KEY)' # Use uma variável secreta para a chave da API
-    api_endpoint: '$(AZURE_OPENAI_ENDPOINT)' # Opcional, para Azure OpenAI
-    api_version: '2023-05-15' # Opcional, para Azure OpenAI
-    ai_model: 'gpt-4' # Nome do modelo ou deployment
-    additional_prompts: 'Foque em segurança,Analise boas práticas'
+    apiKey: '$(OPENAI_API_KEY)' # Use uma variável secreta para a chave da API
+    apiEndpoint: '$(AZURE_OPENAI_ENDPOINT)' # Opcional, para Azure OpenAI
+    apiVersion: '2023-05-15' # Opcional, para Azure OpenAI
+    aiModel: 'gpt-4' # Nome do modelo ou deployment
+    additionalPrompts: 'Foque em segurança,Analise boas práticas'
 ```
 
 ## Depuração
