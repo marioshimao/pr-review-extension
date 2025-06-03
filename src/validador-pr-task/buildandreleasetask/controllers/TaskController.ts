@@ -73,12 +73,12 @@ export class TaskController {
                 fileService,
                 this.logger
             );
-            
-            // Executar análise
+            // Executar análise passando os arquivos já baixados do PR
             const report = await analyzeCodeUseCase.execute(
                 config.repositoryPath,
                 config.excludePatterns,
-                config.additionalPrompts
+                config.additionalPrompts,
+                filesToAnalyze
             );
             
             // Criação do caso de uso para reportar resultados

@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "validador-pr-task",
     "name": "Validador de Pull Request",
-    "version": "0.1.13",
+    "version": "0.1.17",
     "publisher": "MarioKShimao",
     "targets": [
         {

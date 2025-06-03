@@ -34,28 +34,36 @@ export class AnalyzeCodeUseCase {
      * @param repositoryPath Caminho base do repositório
      * @param excludePatterns Padrões para excluir arquivos
      * @param additionalPrompts Prompts adicionais para análise
+     * @param filesToAnalyze Lista opcional de arquivos para análise (se não fornecida, serão encontrados via fileService)
      * @returns Promise com o relatório de análise
      */
     public async execute(
         repositoryPath: string,
         excludePatterns: string[] = [],
-        additionalPrompts?: string[]
+        additionalPrompts?: string[],
+        filesToAnalyze?: string[]
     ): Promise<AnalysisReport> {
         try {
             this.logger.info(`Iniciando análise de código em: ${repositoryPath}`);
             this.logger.info(`Padrões de exclusão: ${excludePatterns.join(', ')}`);
 
-            // Encontrar arquivos para análise
-            const filesToAnalyze = await this.fileService.findFiles(repositoryPath, excludePatterns);
-            this.logger.info(`Encontrados ${filesToAnalyze.length} arquivos para análise.`);
+            // Encontrar arquivos para análise (se não fornecidos)
+            let files: string[] = filesToAnalyze || [];
+            
+            if (!files.length) {
+                files = await this.fileService.findFiles(repositoryPath, excludePatterns);
+                this.logger.info(`Encontrados ${files.length} arquivos para análise via fileService.`);
+            } else {
+                this.logger.info(`Recebidos ${files.length} arquivos para análise diretamente.`);
+            }
 
-            if (filesToAnalyze.length === 0) {
+            if (files.length === 0) {
                 this.logger.warn('Nenhum arquivo encontrado para análise.');
                 return new AnalysisReport([]);
             }
 
             // Analisar arquivos
-            const codeIssues = await this.codeAnalyzer.analyzeFiles(filesToAnalyze, additionalPrompts);
+            const codeIssues = await this.codeAnalyzer.analyzeFiles(files, additionalPrompts);
             this.logger.info(`Análise concluída. Encontrados ${codeIssues.length} problemas.`);
 
             // Criar relatório
