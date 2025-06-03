@@ -329,10 +329,28 @@ class AzureDevOpsRepository {
             // await this.addPullRequestComment(report.generateMarkdownReport());
             // Adicionar comentários em linha para cada problema
             for (const issue of report.getIssues()) {
-                // Extrair o caminho relativo ao repositório
-                const relativeFilePath = path.relative(repositoryPath, issue.file);
-                // Comentar no arquivo específico e linha
-                await this.addPullRequestComment(issue.message, relativeFilePath, issue.line);
+                try {
+                    // Extrair o caminho relativo ao repositório
+                    let relativeFilePath = path.relative(repositoryPath, issue.file);
+                    // Normalizar o caminho (converter backslashes para forward slashes)
+                    relativeFilePath = relativeFilePath.replace(/\\/g, '/');
+                    this.logger.log(`Tentando adicionar comentário ao arquivo ${relativeFilePath} na linha ${issue.line}`);
+                    // Comentar no arquivo específico e linha
+                    await this.addPullRequestComment(issue.message, relativeFilePath, issue.line);
+                    this.logger.log(`Comentário adicionado ao arquivo ${relativeFilePath} na linha ${issue.line}`);
+                }
+                catch (commentError) {
+                    this.logger.warn(`Não foi possível adicionar comentário ao arquivo: ${commentError.message}`);
+                    // Tentar adicionar como comentário geral se o comentário em linha falhar
+                    try {
+                        const fileInfo = `**Arquivo:** ${path.basename(issue.file)}\n**Linha:** ${issue.line}\n\n`;
+                        await this.addPullRequestComment(fileInfo + issue.message);
+                        this.logger.log(`Adicionado como comentário geral porque o comentário em linha falhou`);
+                    }
+                    catch (generalCommentError) {
+                        this.logger.error(`Também falhou ao adicionar comentário geral: ${generalCommentError.message}`);
+                    }
+                }
             }
             // Definir o status do PR baseado nos problemas encontrados
             // Deixar comentado neste momento a aprovação será feita manualmente
