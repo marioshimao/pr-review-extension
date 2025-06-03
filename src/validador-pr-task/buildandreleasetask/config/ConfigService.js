@@ -68,7 +68,21 @@ class ConfigService {
             const excludePatterns = tl.getDelimitedInput('excludePatterns', '\n', false);
             const failOnIssues = tl.getBoolInput('failOnIssues', false);
             const outputFilePath = tl.getInput('outputFilePath', false) || '';
-            const additionalPrompts = tl.getInput('additionalPrompts', false)?.split(',');
+            let additionalPrompts = tl.getInput('additionalPrompts', false)?.split(',');
+            // Tentar carregar o prompt adicional do arquivo .agl/pr-review.prompt.md
+            const promptFromFile = await this.fileService.readAdditionalPromptFile(repositoryPath);
+            if (promptFromFile) {
+                // Se encontrou o arquivo, usar seu conteúdo como prompt adicional
+                this.logService.info('Usando conteúdo do arquivo .agl/pr-review.prompt.md como prompt adicional');
+                this.logService.info(`Conteúdo do prompt carregado com tamanho: ${promptFromFile.length} caracteres`);
+                additionalPrompts = [promptFromFile];
+            }
+            else if (additionalPrompts && additionalPrompts.length > 0) {
+                this.logService.info('Usando prompts adicionais configurados na task');
+            }
+            else {
+                this.logService.info('Nenhum prompt adicional configurado');
+            }
             // Verificar se estamos em um contexto de Pull Request
             const isPullRequestContext = !!tl.getVariable('System.PullRequest.PullRequestId');
             this.appConfig = {

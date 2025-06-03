@@ -44,6 +44,31 @@ A task pode ser adicionada a qualquer pipeline do Azure DevOps com os seguintes 
 | Modelo de IA | Nome do modelo ou deployment | Condicional |
 | Prompts adicionais | Instruções específicas para a análise | Não |
 
+### Arquivo de Prompt Personalizado
+
+Além de configurar prompts adicionais diretamente na task, você pode definir um arquivo de prompt markdown no repositório:
+
+1. Crie um diretório `.agl` na raiz do seu repositório
+2. Adicione um arquivo chamado `pr-review.prompt.md` neste diretório
+3. O conteúdo deste arquivo será usado automaticamente como prompt para o analisador de código
+
+Quando o arquivo `pr-review.prompt.md` existe, seu conteúdo tem prioridade sobre os prompts adicionais configurados na task.
+
+Exemplo de estrutura do arquivo `pr-review.prompt.md`:
+
+```markdown
+# Instruções para Revisão de Pull Request
+
+## Regras de Validação
+- Verifique convenções de nomenclatura
+- Identifique problemas de segurança
+- Analise possíveis problemas de desempenho
+
+## Recomendações
+- Sugira padrões de design quando aplicável
+- Verifique a cobertura de testes
+```
+
 ## Uso em Pipeline YAML
 
 ```yaml

@@ -32,4 +32,11 @@ export interface IFileService {
      * @returns Promise que resolve quando a operação for concluída
      */
     writeFile(filePath: string, content: string): Promise<void>;
+    
+    /**
+     * Lê o arquivo de prompt adicional para revisão de PR
+     * @param repositoryPath Caminho base do repositório
+     * @returns Promise com o conteúdo do arquivo como string ou null se o arquivo não existir
+     */
+    readAdditionalPromptFile(repositoryPath: string): Promise<string | null>;
 }
