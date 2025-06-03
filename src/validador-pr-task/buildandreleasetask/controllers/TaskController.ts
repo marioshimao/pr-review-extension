@@ -53,13 +53,19 @@ export class TaskController {
             const prFilesDir = path.join(config.repositoryPath, '.pr_files_temp');
               // Baixar os arquivos alterados no PR
             filesToAnalyze = await repository.downloadPullRequestFiles(prFilesDir, 
-                // Converter padrões de exclusão para inclusão (negando-os)
-                config.excludePatterns.length > 0 
-                    ? config.excludePatterns.map(pattern => `!${pattern}`) 
+                 config.excludePatterns.length > 0 
+                    ? config.excludePatterns.map(pattern => `${pattern}`) 
                     : undefined
-            );
-            
+            );          
+
             this.logger.info(`Baixados ${filesToAnalyze.length} arquivos do PR para análise.`);
+
+            // Se não houver arquivos para analisar, finalizar a task
+            if (filesToAnalyze.length === 0) {
+                this.logger.warn('Nenhum arquivo encontrado para análise no Pull Request.');
+                tl.setResult(tl.TaskResult.Succeeded, 'Nenhum arquivo encontrado para análise no Pull Request.');
+                return;
+            }
             
             // Criação do caso de uso de análise
             const analyzeCodeUseCase = new AnalyzeCodeUseCase(

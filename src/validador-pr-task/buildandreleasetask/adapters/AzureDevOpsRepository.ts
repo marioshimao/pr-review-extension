@@ -95,13 +95,12 @@ export class AzureDevOpsRepository implements IRepository {
         return !!this.pullRequestId;
     }
 
-    /**
-     * Baixa os arquivos alterados em um Pull Request
+    /**     * Baixa os arquivos alterados em um Pull Request
      * @param targetDirectory Diretório para salvar os arquivos
-     * @param includePatterns Padrões glob para inclusão de arquivos (opcional)
+     * @param excludePatterns Padrões glob para exclusão de arquivos (opcional)
      * @returns Promise com lista de caminhos de arquivos baixados
      */
-    public async downloadPullRequestFiles(targetDirectory: string, includePatterns?: string[]): Promise<string[]> {
+    public async downloadPullRequestFiles(targetDirectory: string, excludePatterns?: string[]): Promise<string[]> {
         if (!this.initialized || !this.gitApi || !this.pullRequestId) {
             throw new Error('Repositório não inicializado ou PR ID não fornecido.');
         }
@@ -135,11 +134,10 @@ export class AzureDevOpsRepository implements IRepository {
                 }
 
                 const filePath = change.item?.path;
-                if (!filePath) continue;
-
-                // Verificar se o arquivo corresponde aos padrões de inclusão
-                if (includePatterns && !this.matchesIncludePatterns(filePath, includePatterns)) {
-                    this.logger.log(`Arquivo não corresponde aos padrões de inclusão: ${filePath}`);
+                if (!filePath) continue;                
+                // Verificar se o arquivo corresponde aos padrões de exclusão
+                if (excludePatterns && this.matchesExcludePatterns(filePath, excludePatterns)) {
+                    this.logger.log(`Arquivo excluído pelos padrões de exclusão: ${filePath}`);
                     continue;
                 }
 
@@ -380,37 +378,35 @@ export class AzureDevOpsRepository implements IRepository {
             this.logger.error(`Erro ao adicionar resultados ao PR: ${error.message}`);
             throw error;
         }
-    }
-
-    /**
-     * Verifica se um caminho de arquivo corresponde a algum dos padrões de inclusão
+    }    /**
+     * Verifica se um caminho de arquivo corresponde a algum dos padrões de exclusão
      * @param filePath Caminho do arquivo
-     * @param includePatterns Padrões glob para inclusão
-     * @returns true se o arquivo corresponder a algum padrão, false caso contrário
+     * @param excludePatterns Padrões glob para exclusão
+     * @returns true se o arquivo deve ser excluído, false caso contrário
      */
-    private matchesIncludePatterns(filePath: string, includePatterns: string[]): boolean {
-        // Se não houver padrões de inclusão, aceitar todos os arquivos
-        if (!includePatterns || includePatterns.length === 0) {
-            return true;
+    private matchesExcludePatterns(filePath: string, excludePatterns: string[]): boolean {
+        // Se não houver padrões de exclusão, não excluir nenhum arquivo
+        if (!excludePatterns || excludePatterns.length === 0) {
+            return false;
         }
 
         // Verificar cada padrão
-        for (const pattern of includePatterns) {
+        for (const pattern of excludePatterns) {
             if (pattern.startsWith('!')) {
-                // Padrão de exclusão negado (incluir o que seria excluído)
+                // Padrão de negação (não excluir o que seria excluído)
                 const normalPattern = pattern.substring(1);
                 if (filePath.match(new RegExp(normalPattern.replace(/\*/g, '.*')))) {
                     return false;
                 }
             } else {
-                // Padrão de inclusão normal
+                // Padrão de exclusão normal
                 if (filePath.match(new RegExp(pattern.replace(/\*/g, '.*')))) {
                     return true;
                 }
             }
         }
 
-        // Por padrão, não incluir o arquivo se nenhum padrão corresponder
+        // Por padrão, não excluir o arquivo se nenhum padrão corresponder
         return false;
     }
 

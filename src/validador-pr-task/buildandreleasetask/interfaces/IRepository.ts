@@ -16,14 +16,13 @@ export interface IRepository {
      * @returns Promise que resolve para true se estamos em um contexto de PR, false caso contrário
      */
     isPullRequestContext(): Promise<boolean>;
-    
-    /**
+      /**
      * Baixa os arquivos alterados em um Pull Request
      * @param targetDirectory Diretório para salvar os arquivos
-     * @param includePatterns Padrões glob para inclusão de arquivos (opcional)
+     * @param excludePatterns Padrões glob para exclusão de arquivos (opcional)
      * @returns Promise com lista de caminhos de arquivos baixados
      */
-    downloadPullRequestFiles(targetDirectory: string, includePatterns?: string[]): Promise<string[]>;
+    downloadPullRequestFiles(targetDirectory: string, excludePatterns?: string[]): Promise<string[]>;
     
     /**
      * Adiciona um comentário ao Pull Request
