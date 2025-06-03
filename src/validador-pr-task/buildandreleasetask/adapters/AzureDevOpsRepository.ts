@@ -16,14 +16,16 @@ export class AzureDevOpsRepository implements IRepository {
     private readonly projectName: string;
     private readonly repositoryId: string;
     private readonly organization: string;
+    private readonly azureDevOpsUri: string = 'https://dev.azure.com/';
     private readonly accessToken: string;
     private readonly pullRequestId?: number;
-    private readonly logger: ILogService;
+    private readonly logger: ILogService;    
     private initialized: boolean = false;
 
     /**
      * Construtor para a classe AzureDevOpsRepository
      * @param organization Nome da organização do Azure DevOps
+     * @param azureDevOpsUri URI do Azure DevOps (opcional, padrão é 'https://dev.azure.com/')
      * @param projectName Nome do projeto
      * @param repositoryId ID do repositório
      * @param accessToken Token de acesso para autenticação
@@ -32,6 +34,7 @@ export class AzureDevOpsRepository implements IRepository {
      */
     constructor(
         organization: string,
+        azureDevOpsUri: string = 'https://dev.azure.com/',
         projectName: string,
         repositoryId: string,
         accessToken: string,
@@ -39,6 +42,7 @@ export class AzureDevOpsRepository implements IRepository {
         pullRequestId?: number
     ) {
         this.organization = organization;
+        this.azureDevOpsUri = azureDevOpsUri;
         this.projectName = projectName;
         this.repositoryId = repositoryId;
         this.accessToken = accessToken;
@@ -56,10 +60,20 @@ export class AzureDevOpsRepository implements IRepository {
             let retryCount = 0;
             let success = false;
 
-            while (!success && retryCount < maxRetries) {
-                try {
+            while (!success && retryCount < maxRetries) {                try {
                     const authHandler = azdev.getPersonalAccessTokenHandler(this.accessToken);
-                    const connection = new azdev.WebApi(`https://dev.azure.com/${this.organization}`, authHandler);
+                    
+                    // Construct the connection URL based on the Azure DevOps URI format
+                    let connectionUrl: string;
+                    if (this.azureDevOpsUri.includes('dev.azure.com')) {
+                        // For dev.azure.com format, append the organization
+                        connectionUrl = `${this.azureDevOpsUri}${this.organization}`;
+                    } else {
+                        // For *.visualstudio.com format, use the URI as is
+                        connectionUrl = this.azureDevOpsUri;
+                    }
+                    
+                    const connection = new azdev.WebApi(connectionUrl, authHandler);
                     
                     this.gitApi = await connection.getGitApi();
                     success = true;

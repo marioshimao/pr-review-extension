@@ -47,6 +47,7 @@ class AzureDevOpsRepository {
     projectName;
     repositoryId;
     organization;
+    azureDevOpsUri = 'https://dev.azure.com/';
     accessToken;
     pullRequestId;
     logger;
@@ -54,14 +55,16 @@ class AzureDevOpsRepository {
     /**
      * Construtor para a classe AzureDevOpsRepository
      * @param organization Nome da organização do Azure DevOps
+     * @param azureDevOpsUri URI do Azure DevOps (opcional, padrão é 'https://dev.azure.com/')
      * @param projectName Nome do projeto
      * @param repositoryId ID do repositório
      * @param accessToken Token de acesso para autenticação
      * @param logger Serviço de log
      * @param pullRequestId ID do Pull Request (opcional)
      */
-    constructor(organization, projectName, repositoryId, accessToken, logger, pullRequestId) {
+    constructor(organization, azureDevOpsUri = 'https://dev.azure.com/', projectName, repositoryId, accessToken, logger, pullRequestId) {
         this.organization = organization;
+        this.azureDevOpsUri = azureDevOpsUri;
         this.projectName = projectName;
         this.repositoryId = repositoryId;
         this.accessToken = accessToken;

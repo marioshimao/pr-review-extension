@@ -97,6 +97,7 @@ class ConfigService {
         try {
             // Recuperar informações do ambiente para configuração do repositório
             const collectionUri = tl.getVariable('System.TeamFoundationCollectionUri') || '';
+            let azureDevOpsUri = 'https://dev.azure.com/';
             // Extrair o organization name do URI, considerando diferentes formatos possíveis
             let organization = '';
             try {
@@ -104,6 +105,7 @@ class ConfigService {
                 if (url.hostname.endsWith('.visualstudio.com')) {
                     // Format: https://aglbr.visualstudio.com/
                     organization = url.hostname.split('.')[0];
+                    azureDevOpsUri = `https://${url.hostname}/`;
                 }
                 else if (url.hostname === 'dev.azure.com') {
                     // Format: https://dev.azure.com/aglbr/
@@ -138,7 +140,7 @@ class ConfigService {
             this.logService.log(`Repository ID: ${repositoryId}`);
             this.logService.log(`Pull Request ID: ${pullRequestId || 'N/A'}`);
             // Inicializar o repositório
-            this.repository = new AzureDevOpsRepository_1.AzureDevOpsRepository(organization, project, repositoryId, accessToken, this.logService, pullRequestId);
+            this.repository = new AzureDevOpsRepository_1.AzureDevOpsRepository(organization, azureDevOpsUri, project, repositoryId, accessToken, this.logService, pullRequestId);
             // Conectar à API
             await this.repository.initialize();
             this.logService.log('Repositório Azure DevOps inicializado com sucesso!');

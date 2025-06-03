@@ -88,6 +88,7 @@ export class ConfigService {
         try {
             // Recuperar informações do ambiente para configuração do repositório
             const collectionUri = tl.getVariable('System.TeamFoundationCollectionUri') || '';
+            let azureDevOpsUri = 'https://dev.azure.com/';
             // Extrair o organization name do URI, considerando diferentes formatos possíveis
             let organization = '';
             try {
@@ -95,6 +96,7 @@ export class ConfigService {
                 if (url.hostname.endsWith('.visualstudio.com')) {
                     // Format: https://aglbr.visualstudio.com/
                     organization = url.hostname.split('.')[0];
+                    azureDevOpsUri = `https://${url.hostname}/`;
                 } else if (url.hostname === 'dev.azure.com') {
                     // Format: https://dev.azure.com/aglbr/
                     const pathParts = url.pathname.split('/').filter(p => p);
@@ -134,6 +136,7 @@ export class ConfigService {
             // Inicializar o repositório
             this.repository = new AzureDevOpsRepository(
                 organization,
+                azureDevOpsUri,
                 project,
                 repositoryId,
                 accessToken,
