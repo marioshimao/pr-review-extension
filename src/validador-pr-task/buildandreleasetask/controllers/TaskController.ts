@@ -45,8 +45,7 @@ export class TaskController {
                 
                 // Criar um diretório temporário para os arquivos do PR
                 const prFilesDir = path.join(config.repositoryPath, '.pr_files_temp');
-                
-                // Baixar os arquivos alterados no PR
+                  // Baixar os arquivos alterados no PR
                 filesToAnalyze = await repository.downloadPullRequestFiles(prFilesDir, 
                     // Converter padrões de exclusão para inclusão (negando-os)
                     config.excludePatterns.length > 0 

@@ -145,7 +145,6 @@ class OpenAICodeAnalyzer {
                     temperature: 0.1,
                     max_tokens: 1500,
                 });
-                console.log(response.choices[0].message.content);
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
                     // Extrair resultados do formato JSON
