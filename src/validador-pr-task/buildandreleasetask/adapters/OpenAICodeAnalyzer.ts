@@ -13,6 +13,11 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
     private openai: OpenAI | AzureOpenAI;
     private logger: ILogService;
     
+    private _azureConfig?: {
+        endpoint: string;
+        apiVersion: string;
+        deploymentName: string;
+    };
     /**
      * Construtor para a classe OpenAICodeAnalyzer
      * @param apiKey Chave de API (OpenAI ou Azure OpenAI)
@@ -38,6 +43,7 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                 apiVersion: azureConfig.apiVersion,
                 deployment: azureConfig.deploymentName
             });
+            this._azureConfig = azureConfig;
             this.logger.info('Utilizando AzureOpenAI.');
         } else {
             this.openai = new OpenAI({
@@ -129,7 +135,7 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
 
                 // Enviar para análise
                 const response = await this.openai.chat.completions.create({
-                    model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4",
+                    model: this._azureConfig ? this._azureConfig.deploymentName : 'gpt-4o',
                     messages: [
                         { 
                             role: "system", 

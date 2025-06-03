@@ -59,43 +59,34 @@ class TaskController {
             const config = await this.configService.loadConfig();
             // Inicializar repositório
             const repository = await this.configService.initializeRepository();
+            // Verificar se estamos em um contexto de Pull Request
+            if (!repository || !config.isPullRequestContext) {
+                this.logger.info('Não estamos em um contexto de Pull Request. Finalizando a task sem realizar análise.');
+                tl.setResult(tl.TaskResult.Succeeded, 'Task finalizada. Não é um contexto de Pull Request.');
+                return;
+            }
             // Inicializar analisador de código
             const codeAnalyzer = await this.configService.initializeCodeAnalyzer();
             // Obter serviço de arquivos
             const fileService = this.configService.getFileService();
             let filesToAnalyze = [];
             // Se estamos em um contexto de Pull Request e o repositório foi inicializado com sucesso
-            if (repository && config.isPullRequestContext) {
-                this.logger.info('Detectado contexto de Pull Request. Baixando arquivos alterados...');
-                // Criar um diretório temporário para os arquivos do PR
-                const prFilesDir = path.join(config.repositoryPath, '.pr_files_temp');
-                // Baixar os arquivos alterados no PR
-                filesToAnalyze = await repository.downloadPullRequestFiles(prFilesDir, 
-                // Converter padrões de exclusão para inclusão (negando-os)
-                config.excludePatterns.length > 0
-                    ? config.excludePatterns.map(pattern => `!${pattern}`)
-                    : undefined);
-                this.logger.info(`Baixados ${filesToAnalyze.length} arquivos do PR para análise.`);
-            }
-            else {
-                // Caso não seja um PR ou não tenha sido possível inicializar o repositório,
-                // use a abordagem padrão de busca local de arquivos
-                this.logger.info('Usando busca local de arquivos...');
-                filesToAnalyze = await fileService.findFiles(config.repositoryPath, config.excludePatterns);
-            }
+            this.logger.info('Detectado contexto de Pull Request. Baixando arquivos alterados...');
+            // Criar um diretório temporário para os arquivos do PR
+            const prFilesDir = path.join(config.repositoryPath, '.pr_files_temp');
+            // Baixar os arquivos alterados no PR
+            filesToAnalyze = await repository.downloadPullRequestFiles(prFilesDir, 
+            // Converter padrões de exclusão para inclusão (negando-os)
+            config.excludePatterns.length > 0
+                ? config.excludePatterns.map(pattern => `!${pattern}`)
+                : undefined);
+            this.logger.info(`Baixados ${filesToAnalyze.length} arquivos do PR para análise.`);
             // Criação do caso de uso de análise
             const analyzeCodeUseCase = new AnalyzeCodeUseCase_1.AnalyzeCodeUseCase(codeAnalyzer, fileService, this.logger);
             // Executar análise
             const report = await analyzeCodeUseCase.execute(config.repositoryPath, config.excludePatterns, config.additionalPrompts);
             // Criação do caso de uso para reportar resultados
-            const reportPullRequestIssuesUseCase = new ReportPullRequestIssuesUseCase_1.ReportPullRequestIssuesUseCase(repository || {
-                initialize: async () => { },
-                isPullRequestContext: async () => false,
-                downloadPullRequestFiles: async () => [],
-                addPullRequestComment: async () => { },
-                setPullRequestStatus: async () => { },
-                addAnalysisResultToPullRequest: async () => { }
-            }, fileService, this.logger);
+            const reportPullRequestIssuesUseCase = new ReportPullRequestIssuesUseCase_1.ReportPullRequestIssuesUseCase(repository, fileService, this.logger);
             // Reportar resultados
             const success = await reportPullRequestIssuesUseCase.execute(report, config.repositoryPath, config.outputFilePath, config.failOnIssues);
             // Definir resultado da task
