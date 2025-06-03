@@ -149,7 +149,8 @@ class FileSystemService {
      * Lê o arquivo de prompt adicional para revisão de PR
      * @param repositoryPath Caminho base do repositório
      * @returns Promise com o conteúdo do arquivo como string ou null se o arquivo não existir
-     */ async readAdditionalPromptFile(repositoryPath) {
+     */
+    async readAdditionalPromptFile(repositoryPath) {
         try {
             const promptFilePath = path.join(repositoryPath, '.agl', 'pr-review.prompt.md');
             if (!fs.existsSync(promptFilePath)) {
