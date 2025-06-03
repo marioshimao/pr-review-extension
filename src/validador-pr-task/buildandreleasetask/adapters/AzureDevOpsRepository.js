@@ -83,7 +83,17 @@ class AzureDevOpsRepository {
             while (!success && retryCount < maxRetries) {
                 try {
                     const authHandler = azdev.getPersonalAccessTokenHandler(this.accessToken);
-                    const connection = new azdev.WebApi(`https://dev.azure.com/${this.organization}`, authHandler);
+                    // Construct the connection URL based on the Azure DevOps URI format
+                    let connectionUrl;
+                    if (this.azureDevOpsUri.includes('dev.azure.com')) {
+                        // For dev.azure.com format, append the organization
+                        connectionUrl = `${this.azureDevOpsUri}${this.organization}`;
+                    }
+                    else {
+                        // For *.visualstudio.com format, use the URI as is
+                        connectionUrl = this.azureDevOpsUri;
+                    }
+                    const connection = new azdev.WebApi(connectionUrl, authHandler);
                     this.gitApi = await connection.getGitApi();
                     success = true;
                     this.initialized = true;
