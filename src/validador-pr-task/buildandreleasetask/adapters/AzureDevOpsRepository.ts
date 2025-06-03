@@ -362,8 +362,9 @@ export class AzureDevOpsRepository implements IRepository {
         }
 
         try {
-            // Adicionar comentário resumo ao PR
-            await this.addPullRequestComment(report.generateMarkdownReport());
+            // Adicionar comentário resumo ao PR 
+            // Deixar comentado para evitar duplicidade de comentários
+            // await this.addPullRequestComment(report.generateMarkdownReport());
             
             // Adicionar comentários em linha para cada problema
             for (const issue of report.getIssues()) {
@@ -379,13 +380,14 @@ export class AzureDevOpsRepository implements IRepository {
             }
             
             // Definir o status do PR baseado nos problemas encontrados
-            if (report.hasIssues()) {
-                await this.setPullRequestStatus('waiting', 
-                    `Encontrados ${report.getIssueCount()} problemas que precisam de atenção.`);
-            } else {
-                await this.setPullRequestStatus('approved', 
-                    'Nenhum problema encontrado na análise de código.');
-            }
+            // Deixar comentado neste momento a aprovação será feita manualmente
+            // if (report.hasIssues()) {
+            //     await this.setPullRequestStatus('waiting', 
+            //         `Encontrados ${report.getIssueCount()} problemas que precisam de atenção.`);
+            // } else {
+            //     await this.setPullRequestStatus('approved', 
+            //         'Nenhum problema encontrado na análise de código.');
+            // }
             
             this.logger.info('Comentários adicionados ao PR com sucesso.');
         } catch (error: any) {
