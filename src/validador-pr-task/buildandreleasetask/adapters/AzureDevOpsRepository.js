@@ -93,6 +93,8 @@ class AzureDevOpsRepository {
                         // For *.visualstudio.com format, use the URI as is
                         connectionUrl = this.azureDevOpsUri;
                     }
+                    this.logger.info(`Conectando em ${connectionUrl} , com organização:${this.organization}`);
+                    ;
                     const connection = new azdev.WebApi(connectionUrl, authHandler);
                     this.gitApi = await connection.getGitApi();
                     success = true;
