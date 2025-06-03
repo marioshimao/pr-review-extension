@@ -131,87 +131,89 @@ export class AzureDevOpsRepository implements IRepository {
                 this.pullRequestId,
                 this.projectName
             );
-
-            if (iterations && iterations.length > 0) {
-                
-                const latestIteration = iterations[iterations.length - 1];
-   
-                // Obter as alterações no PR
-                const changes = await this.gitApi.getPullRequestIterationChanges(
-                    this.repositoryId,
-                    this.pullRequestId,
-                    latestIteration.id!, 
-                    this.projectName
-                );
-
-                if (!changes || !changes.changeEntries) {
-                    this.logger.warn('Nenhuma alteração encontrada no PR.');
-                    return [];
-                }
-
-                const downloadedFiles: string[] = [];
-
-                // Processar cada arquivo alterado
-                for (const change of changes.changeEntries || []) {
-                    // Pular se não for um arquivo ou se foi excluído
-                    if (change.item?.isFolder || change.changeType === gitInterfaces.VersionControlChangeType.Delete) {
-                        continue;
-                    }
-
-                    const filePath = change.item?.path;
-                    if (!filePath) continue;                
-                    // Verificar se o arquivo corresponde aos padrões de exclusão
-                    if (excludePatterns && this.matchesExcludePatterns(filePath, excludePatterns)) {
-                        this.logger.log(`Arquivo excluído pelos padrões de exclusão: ${filePath}`);
-                        continue;
-                    }
-
-                    try {
-                        // Obter o conteúdo do arquivo
-                        const fileContentStream = await this.gitApi.getItemContent(
-                            this.repositoryId,
-                            filePath,
-                            undefined,
-                            undefined,
-                            undefined,
-                            undefined,
-                            undefined,
-                            true, // includeContent
-                            {
-                                version: undefined,
-                                versionOptions: gitInterfaces.GitVersionOptions.None,
-                                versionType: gitInterfaces.GitVersionType.Branch
-                            }
-                        );
-
-                        if (!fileContentStream) {
-                            this.logger.warn(`Não foi possível obter conteúdo para: ${filePath}`);
-                            continue;
-                        }
-
-                        // Definir o caminho de destino do arquivo
-                        const destinationPath = path.join(targetDirectory, filePath);
-                        const destinationDir = path.dirname(destinationPath);
-
-                        // Criar diretório de destino se não existir
-                        if (!fs.existsSync(destinationDir)) {
-                            fs.mkdirSync(destinationDir, { recursive: true });
-                        }
-
-                        // Ler o stream e salvar o conteúdo do arquivo
-                        const buffer = await this.streamToBuffer(fileContentStream);
-                        fs.writeFileSync(destinationPath, buffer);
-                        downloadedFiles.push(destinationPath);
-                        
-                        this.logger.log(`Arquivo baixado: ${destinationPath}`);
-                    } catch (fileError: any) {
-                        this.logger.warn(`Erro ao baixar arquivo ${filePath}: ${fileError.message}`);
-                    }
-                }
-
-                this.logger.info(`Baixados ${downloadedFiles.length} arquivos do PR para análise.`);
-                return downloadedFiles;
+            
+            if (!iterations || iterations.length === 0) {
+                this.logger.warn('Nenhuma iteração encontrada no PR.');
+                return [];
             }
+            
+            const latestIteration = iterations[iterations.length - 1];
+   
+            // Obter as alterações no PR
+            const changes = await this.gitApi.getPullRequestIterationChanges(
+                this.repositoryId,
+                this.pullRequestId,
+                latestIteration.id!,
+                this.projectName
+            );
+
+            if (!changes || !changes.changeEntries) {
+                this.logger.warn('Nenhuma alteração encontrada no PR.');
+                return [];
+            }
+
+            const downloadedFiles: string[] = [];
+
+            // Processar cada arquivo alterado
+            for (const change of changes.changeEntries || []) {
+                // Pular se não for um arquivo ou se foi excluído
+                if (change.item?.isFolder || change.changeType === gitInterfaces.VersionControlChangeType.Delete) {
+                    continue;
+                }
+
+                const filePath = change.item?.path;
+                if (!filePath) continue;                
+                // Verificar se o arquivo corresponde aos padrões de exclusão
+                if (excludePatterns && this.matchesExcludePatterns(filePath, excludePatterns)) {
+                    this.logger.log(`Arquivo excluído pelos padrões de exclusão: ${filePath}`);
+                    continue;
+                }
+
+                try {
+                    // Obter o conteúdo do arquivo
+                    const fileContentStream = await this.gitApi.getItemContent(
+                        this.repositoryId,
+                        filePath,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        undefined,
+                        true, // includeContent
+                        {
+                            version: undefined,
+                            versionOptions: gitInterfaces.GitVersionOptions.None,
+                            versionType: gitInterfaces.GitVersionType.Branch
+                        }
+                    );
+
+                    if (!fileContentStream) {
+                        this.logger.warn(`Não foi possível obter conteúdo para: ${filePath}`);
+                        continue;
+                    }
+
+                    // Definir o caminho de destino do arquivo
+                    const destinationPath = path.join(targetDirectory, filePath);
+                    const destinationDir = path.dirname(destinationPath);
+
+                    // Criar diretório de destino se não existir
+                    if (!fs.existsSync(destinationDir)) {
+                        fs.mkdirSync(destinationDir, { recursive: true });
+                    }
+
+                    // Ler o stream e salvar o conteúdo do arquivo
+                    const buffer = await this.streamToBuffer(fileContentStream);
+                    fs.writeFileSync(destinationPath, buffer);
+                    downloadedFiles.push(destinationPath);
+                    
+                    this.logger.log(`Arquivo baixado: ${destinationPath}`);
+                } catch (fileError: any) {
+                    this.logger.warn(`Erro ao baixar arquivo ${filePath}: ${fileError.message}`);
+                }
+            }
+
+            this.logger.info(`Baixados ${downloadedFiles.length} arquivos do PR para análise.`);
+            return downloadedFiles;
         } catch (error: any) {
             this.logger.error(`Erro ao baixar arquivos do PR: ${error.message}`);
             throw error;
@@ -466,9 +468,8 @@ export class AzureDevOpsRepository implements IRepository {
     private async streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
         return new Promise<Buffer>((resolve, reject) => {
             const chunks: Buffer[] = [];
-            
-            stream.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
-            stream.on('error', (err) => reject(err));
+              stream.on('data', (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
+            stream.on('error', (err: Error) => reject(err));
             stream.on('end', () => resolve(Buffer.concat(chunks)));
         });
     }
