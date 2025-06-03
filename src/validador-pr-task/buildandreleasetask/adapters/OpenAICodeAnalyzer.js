@@ -45,6 +45,7 @@ const CodeIssue_1 = require("../entities/CodeIssue");
 class OpenAICodeAnalyzer {
     openai;
     logger;
+    _azureConfig;
     /**
      * Construtor para a classe OpenAICodeAnalyzer
      * @param apiKey Chave de API (OpenAI ou Azure OpenAI)
@@ -61,6 +62,7 @@ class OpenAICodeAnalyzer {
                 apiVersion: azureConfig.apiVersion,
                 deployment: azureConfig.deploymentName
             });
+            this._azureConfig = azureConfig;
             this.logger.info('Utilizando AzureOpenAI.');
         }
         else {
@@ -131,7 +133,7 @@ class OpenAICodeAnalyzer {
                 }
                 // Enviar para análise
                 const response = await this.openai.chat.completions.create({
-                    model: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-4",
+                    model: this._azureConfig ? this._azureConfig.deploymentName : 'gpt-4o',
                     messages: [
                         {
                             role: "system",

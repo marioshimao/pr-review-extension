@@ -7,11 +7,10 @@
     "helpMarkDown": "[Saiba mais sobre esta task](https://github.com/marioshimao/pr-review-extension)",
     "category": "Utility",
     "author": "MarioKShimao",
-    "preview": false,
-    "version": {
+    "preview": false,    "version": {
         "Major": 0,
         "Minor": 1,
-        "Patch": 8
+        "Patch": 12
     },
     "instanceNameFormat": "Validar PR: $(message)",
     "inputs": [
