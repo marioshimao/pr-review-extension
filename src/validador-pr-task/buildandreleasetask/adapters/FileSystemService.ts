@@ -130,7 +130,8 @@ export class FileSystemService implements IFileService {
      * Lê o arquivo de prompt adicional para revisão de PR
      * @param repositoryPath Caminho base do repositório
      * @returns Promise com o conteúdo do arquivo como string ou null se o arquivo não existir
-     */    public async readAdditionalPromptFile(repositoryPath: string): Promise<string | null> {
+     */    
+    public async readAdditionalPromptFile(repositoryPath: string): Promise<string | null> {
         try {
             const promptFilePath = path.join(repositoryPath, '.agl', 'pr-review.prompt.md');
             
