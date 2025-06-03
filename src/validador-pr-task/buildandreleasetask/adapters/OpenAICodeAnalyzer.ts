@@ -36,7 +36,9 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                 apiKey: apiKey,
                 endpoint: azureConfig.endpoint,
                 apiVersion: azureConfig.apiVersion,
+                deployment: azureConfig.deploymentName
             });
+            this.logger.info('Utilizando AzureOpenAI.');
         } else {
             this.openai = new OpenAI({
                 apiKey: apiKey
@@ -141,12 +143,19 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                     temperature: 0.1,
                     max_tokens: 1500,
                 });
-
+ 
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
                     // Extrair resultados do formato JSON
                     try {
-                        const analysisContent = response.choices[0].message.content;
+                        let analysisContent = response.choices[0].message.content;
+                        
+                        // Remove Markdown code block formatting if present
+                        if (analysisContent.includes('```json')) {
+                            analysisContent = analysisContent.replace(/```json\n?/, '').replace(/\n?```$/, '');
+                        } else if (analysisContent.includes('```')) {
+                            analysisContent = analysisContent.replace(/```\n?/, '').replace(/\n?```$/, '');
+                        }
                         const analysisResults = JSON.parse(analysisContent);
                         
                         if (Array.isArray(analysisResults)) {

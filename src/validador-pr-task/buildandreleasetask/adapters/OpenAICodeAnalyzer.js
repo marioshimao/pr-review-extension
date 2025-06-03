@@ -59,7 +59,9 @@ class OpenAICodeAnalyzer {
                 apiKey: apiKey,
                 endpoint: azureConfig.endpoint,
                 apiVersion: azureConfig.apiVersion,
+                deployment: azureConfig.deploymentName
             });
+            this.logger.info('Utilizando AzureOpenAI.');
         }
         else {
             this.openai = new openai_1.OpenAI({
@@ -143,11 +145,19 @@ class OpenAICodeAnalyzer {
                     temperature: 0.1,
                     max_tokens: 1500,
                 });
+                console.log(response.choices[0].message.content);
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
                     // Extrair resultados do formato JSON
                     try {
-                        const analysisContent = response.choices[0].message.content;
+                        let analysisContent = response.choices[0].message.content;
+                        // Remove Markdown code block formatting if present
+                        if (analysisContent.includes('```json')) {
+                            analysisContent = analysisContent.replace(/```json\n?/, '').replace(/\n?```$/, '');
+                        }
+                        else if (analysisContent.includes('```')) {
+                            analysisContent = analysisContent.replace(/```\n?/, '').replace(/\n?```$/, '');
+                        }
                         const analysisResults = JSON.parse(analysisContent);
                         if (Array.isArray(analysisResults)) {
                             // Adicionar cada problema encontrado
