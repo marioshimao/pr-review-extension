@@ -160,7 +160,7 @@ class OpenAICodeAnalyzer {
                 }
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
-                    if (this.usingDefaultPrompt) {
+                    if (!this.usingDefaultPrompt) {
                         try {
                             // Resposta no formato textual
                             const analysisResults = response.choices[0].message.content;
