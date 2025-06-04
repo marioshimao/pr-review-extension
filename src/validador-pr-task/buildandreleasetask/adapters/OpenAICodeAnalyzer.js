@@ -175,37 +175,39 @@ class OpenAICodeAnalyzer {
                             return fileIssues;
                         }
                     }
-                    // Extrair resultados do formato JSON
-                    try {
-                        let analysisContent = response.choices[0].message.content;
-                        // Remove Markdown code block formatting if present
-                        if (analysisContent.includes('```json')) {
-                            analysisContent = analysisContent.replace(/```json\n?/, '').replace(/\n?```$/, '');
+                    else {
+                        // Extrair resultados do formato JSON
+                        try {
+                            let analysisContent = response.choices[0].message.content;
+                            // Remove Markdown code block formatting if present
+                            if (analysisContent.includes('```json')) {
+                                analysisContent = analysisContent.replace(/```json\n?/, '').replace(/\n?```$/, '');
+                            }
+                            else if (analysisContent.includes('```')) {
+                                analysisContent = analysisContent.replace(/```\n?/, '').replace(/\n?```$/, '');
+                            }
+                            const analysisResults = JSON.parse(analysisContent);
+                            if (Array.isArray(analysisResults)) {
+                                // Adicionar cada problema encontrado
+                                analysisResults.forEach(result => {
+                                    const issue = new CodeIssue_1.CodeIssue(file, result.line || 0, result.message || 'Problema identificado (sem detalhes)', result.severity || 'medium');
+                                    fileIssues.push(issue);
+                                });
+                                this.logger.log(`Encontrados ${fileIssues.length} problemas no arquivo ${file}`);
+                                // Se chegamos aqui, a análise foi bem-sucedida, podemos retornar
+                                return fileIssues;
+                            }
+                            else {
+                                throw new Error('Resultado da análise não é um array.');
+                            }
                         }
-                        else if (analysisContent.includes('```')) {
-                            analysisContent = analysisContent.replace(/```\n?/, '').replace(/\n?```$/, '');
+                        catch (parseError) {
+                            // Se falhar ao processar como JSON, tentar extrair informações do texto
+                            const error = parseError;
+                            this.logger.warn(`Falha ao processar resposta como JSON: ${error.message}`);
+                            fileIssues.push(new CodeIssue_1.CodeIssue(file, 1, `Não foi possível analisar este arquivo em formato estruturado. ${error.message}`, 'medium'));
+                            // Continuar com retry neste caso
                         }
-                        const analysisResults = JSON.parse(analysisContent);
-                        if (Array.isArray(analysisResults)) {
-                            // Adicionar cada problema encontrado
-                            analysisResults.forEach(result => {
-                                const issue = new CodeIssue_1.CodeIssue(file, result.line || 0, result.message || 'Problema identificado (sem detalhes)', result.severity || 'medium');
-                                fileIssues.push(issue);
-                            });
-                            this.logger.log(`Encontrados ${fileIssues.length} problemas no arquivo ${file}`);
-                            // Se chegamos aqui, a análise foi bem-sucedida, podemos retornar
-                            return fileIssues;
-                        }
-                        else {
-                            throw new Error('Resultado da análise não é um array.');
-                        }
-                    }
-                    catch (parseError) {
-                        // Se falhar ao processar como JSON, tentar extrair informações do texto
-                        const error = parseError;
-                        this.logger.warn(`Falha ao processar resposta como JSON: ${error.message}`);
-                        fileIssues.push(new CodeIssue_1.CodeIssue(file, 1, `Não foi possível analisar este arquivo em formato estruturado. ${error.message}`, 'medium'));
-                        // Continuar com retry neste caso
                     }
                 }
                 // Se chegamos aqui sem um return anterior, algo deu errado no processamento da resposta
