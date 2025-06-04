@@ -380,39 +380,44 @@ export class AzureDevOpsRepository implements IRepository {
             // Deixar comentado para evitar duplicidade de comentários
             // await this.addPullRequestComment(report.generateMarkdownReport());
             
-            // Adicionar comentários em linha para cada problema
-            for (const issue of report.getIssues()) {
-                try {
-                    // Extrair o caminho relativo ao repositório
-                    let relativeFilePath = path.relative(repositoryPath, issue.file);
-                    
-                    // Normalizar o caminho (converter backslashes para forward slashes)
-                    relativeFilePath = relativeFilePath.replace(/\\/g, '/');
-                    
-                    this.logger.log(`Tentando adicionar comentário ao arquivo ${relativeFilePath} na linha ${issue.line}`);
-                    
-                    // Comentar no arquivo específico e linha
-                    await this.addPullRequestComment(
-                        issue.message,
-                        relativeFilePath,
-                        issue.line
-                    );
-                    
-                    this.logger.log(`Comentário adicionado ao arquivo ${relativeFilePath} na linha ${issue.line}`);
-                } catch (commentError: any) {
-                    this.logger.warn(`Não foi possível adicionar comentário ao arquivo: ${commentError.message}`);
-                    
-                    // Tentar adicionar como comentário geral se o comentário em linha falhar
+            if (report.getIssues()[0].responseFormat !== 'markdown') {
+                // Adicionar comentário em formato markdown ao PR 
+                await this.addPullRequestComment(report.getIssues()[0].message);
+            }
+            else {                
+                // Adicionar comentários em linha para cada problema
+                for (const issue of report.getIssues()) {
                     try {
-                        const fileInfo = `**Arquivo:** ${path.basename(issue.file)}\n**Linha:** ${issue.line}\n\n`;
-                        await this.addPullRequestComment(fileInfo + issue.message);
-                        this.logger.log(`Adicionado como comentário geral porque o comentário em linha falhou`);
-                    } catch (generalCommentError: any) {
-                        this.logger.error(`Também falhou ao adicionar comentário geral: ${generalCommentError.message}`);
+                        // Extrair o caminho relativo ao repositório
+                        let relativeFilePath = path.relative(repositoryPath, issue.file);
+                        
+                        // Normalizar o caminho (converter backslashes para forward slashes)
+                        relativeFilePath = relativeFilePath.replace(/\\/g, '/');
+                        
+                        this.logger.log(`Tentando adicionar comentário ao arquivo ${relativeFilePath} na linha ${issue.line}`);
+                        
+                        // Comentar no arquivo específico e linha
+                        await this.addPullRequestComment(
+                            issue.message,
+                            relativeFilePath,
+                            issue.line
+                        );
+                        
+                        this.logger.log(`Comentário adicionado ao arquivo ${relativeFilePath} na linha ${issue.line}`);
+                    } catch (commentError: any) {
+                        this.logger.warn(`Não foi possível adicionar comentário ao arquivo: ${commentError.message}`);
+                        
+                        // Tentar adicionar como comentário geral se o comentário em linha falhar
+                        try {
+                            const fileInfo = `**Arquivo:** ${path.basename(issue.file)}\n**Linha:** ${issue.line}\n\n`;
+                            await this.addPullRequestComment(fileInfo + issue.message);
+                            this.logger.log(`Adicionado como comentário geral porque o comentário em linha falhou`);
+                        } catch (generalCommentError: any) {
+                            this.logger.error(`Também falhou ao adicionar comentário geral: ${generalCommentError.message}`);
+                        }
                     }
                 }
             }
-            
             // Definir o status do PR baseado nos problemas encontrados
             // Deixar comentado neste momento a aprovação será feita manualmente
             // if (report.hasIssues()) {

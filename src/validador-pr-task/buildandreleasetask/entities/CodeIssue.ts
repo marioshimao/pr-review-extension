@@ -9,12 +9,14 @@ export class CodeIssue {
      * @param line - Número da linha onde o problema foi encontrado
      * @param message - Mensagem descritiva do problema
      * @param severity - Nível de severidade do problema (high, medium, low)
+     * @param responseFormat - Formato de resposta esperado (json, markdown) 
      */
     constructor(
         public file: string,
         public line: number,
         public message: string,
-        public severity: 'high' | 'medium' | 'low' = 'medium'
+        public severity: 'high' | 'medium' | 'low' = 'medium',
+        public responseFormat: 'json' | 'markdown' = 'json'
     ) {}
 
     /**
