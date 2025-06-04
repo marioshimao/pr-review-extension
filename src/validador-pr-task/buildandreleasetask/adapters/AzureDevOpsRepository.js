@@ -341,8 +341,14 @@ class AzureDevOpsRepository {
                     // Normalizar o caminho (converter backslashes para forward slashes)
                     relativeFilePath = relativeFilePath.replace(/\\/g, '/');
                     this.logger.log(`Tentando adicionar comentário ao arquivo ${relativeFilePath} na linha ${issue.line}`);
-                    // Comentar no arquivo específico e linha
-                    await this.addPullRequestComment(issue.message, relativeFilePath, issue.line);
+                    if (issue.responseFormat === 'json') {
+                        // Comentar no arquivo específico e linha
+                        await this.addPullRequestComment(issue.message, relativeFilePath, issue.line);
+                    }
+                    else if (issue.responseFormat === 'markdown') {
+                        // Comentar no arquivo específico e linha
+                        await this.addPullRequestComment(issue.message, relativeFilePath, issue.line);
+                    }
                     this.logger.log(`Comentário adicionado ao arquivo ${relativeFilePath} na linha ${issue.line}`);
                 }
                 catch (commentError) {

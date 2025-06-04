@@ -45,6 +45,7 @@ const CodeIssue_1 = require("../entities/CodeIssue");
 class OpenAICodeAnalyzer {
     openai;
     logger;
+    usingDefaultPrompt = true;
     _azureConfig;
     /**
      * Construtor para a classe OpenAICodeAnalyzer
@@ -127,9 +128,15 @@ class OpenAICodeAnalyzer {
                 if (additionalPrompts && additionalPrompts.length > 0) {
                     const validPrompts = additionalPrompts.filter(prompt => prompt && prompt.trim() !== '');
                     if (validPrompts.length > 0) {
-                        systemContent += "\n\nConsiderações adicionais:\n" + validPrompts.map(p => `- ${p.trim()}`).join('\n');
+                        this.usingDefaultPrompt = false;
+                        systemContent = validPrompts.map(p => `- ${p.trim()}`).join('\n');
                         this.logger.log(`Adicionando ${validPrompts.length} prompts adicionais à análise de ${file}`);
                     }
+                }
+                // Só loga o conteúdo do arquivo se o debug do pipeline estiver ativado
+                if (process.env.SYSTEM_DEBUG === 'true') {
+                    this.logger.log(`Analisando arquivo: ${file} com prompt: ${systemContent}`);
+                    this.logger.log(`Conteúdo do arquivo (truncado): ${content.substring(0, 10000)}...`);
                 }
                 // Enviar para análise
                 const response = await this.openai.chat.completions.create({
@@ -147,9 +154,27 @@ class OpenAICodeAnalyzer {
                     temperature: 0.1,
                     max_tokens: 1500,
                 });
-                console.log(response.choices[0]?.message?.content);
+                // Só loga o conteúdo do arquivo se o debug do pipeline estiver ativado
+                if (process.env.SYSTEM_DEBUG === 'true') {
+                    console.log(response.choices[0]?.message?.content);
+                }
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
+                    if (this.usingDefaultPrompt) {
+                        try {
+                            // Resposta no formato textual
+                            const analysisResults = response.choices[0].message.content;
+                            // Criar um issue com o conteúdo textual
+                            const issue = new CodeIssue_1.CodeIssue(file, 1, analysisResults, 'medium', 'markdown');
+                            fileIssues.push(issue);
+                            return fileIssues;
+                        }
+                        catch (textError) {
+                            this.logger.warn(`Falha ao processar resposta como texto: ${textError.message}`);
+                            fileIssues.push(new CodeIssue_1.CodeIssue(file, 1, `Não foi possível analisar este arquivo em formato textual. ${textError.message}`, 'medium'));
+                            return fileIssues;
+                        }
+                    }
                     // Extrair resultados do formato JSON
                     try {
                         let analysisContent = response.choices[0].message.content;

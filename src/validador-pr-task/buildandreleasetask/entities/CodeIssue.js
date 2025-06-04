@@ -10,18 +10,21 @@ class CodeIssue {
     line;
     message;
     severity;
+    responseFormat;
     /**
      * Construtor para a classe CodeIssue
      * @param file - Caminho do arquivo onde o problema foi encontrado
      * @param line - Número da linha onde o problema foi encontrado
      * @param message - Mensagem descritiva do problema
      * @param severity - Nível de severidade do problema (high, medium, low)
+     * @param responseFormat - Formato de resposta esperado (json, markdown)
      */
-    constructor(file, line, message, severity = 'medium') {
+    constructor(file, line, message, severity = 'medium', responseFormat = 'json') {
         this.file = file;
         this.line = line;
         this.message = message;
         this.severity = severity;
+        this.responseFormat = responseFormat;
     }
     /**
      * Cria uma representação em string do problema no formato requerido para relatórios

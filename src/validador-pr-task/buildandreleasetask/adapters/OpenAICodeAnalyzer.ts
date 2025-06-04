@@ -125,10 +125,10 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                 let systemContent = "Você é um especialista em revisão de código. Analise o código a seguir e identifique problemas de segurança, performance, boas práticas e manutenibilidade. Formate a saída em JSON com os campos 'line', 'message' e 'severity' (high, medium, low).";
                 
                 // Adicionar prompts adicionais, se existirem
-                if (additionalPrompts && additionalPrompts.length > 0) {
-                    this.usingDefaultPrompt = false;
+                if (additionalPrompts && additionalPrompts.length > 0) {                    
                     const validPrompts = additionalPrompts.filter(prompt => prompt && prompt.trim() !== '');
                     if (validPrompts.length > 0) {
+                        this.usingDefaultPrompt = false;
                         systemContent = validPrompts.map(p => `- ${p.trim()}`).join('\n');
                         this.logger.log(`Adicionando ${validPrompts.length} prompts adicionais à análise de ${file}`);
                     }
@@ -186,6 +186,7 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                                 `Não foi possível analisar este arquivo em formato textual. ${textError.message}`,
                                 'medium'
                             ));
+                            return fileIssues;
                         }
                     }
                     // Extrair resultados do formato JSON

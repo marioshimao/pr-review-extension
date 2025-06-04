@@ -380,13 +380,8 @@ export class AzureDevOpsRepository implements IRepository {
             // Deixar comentado para evitar duplicidade de comentários
             // await this.addPullRequestComment(report.generateMarkdownReport());
             
-            if (report.getIssues()[0].responseFormat !== 'markdown') {
-                // Adicionar comentário em formato markdown ao PR 
-                await this.addPullRequestComment(report.getIssues()[0].message);
-            }
-            else {                
-                // Adicionar comentários em linha para cada problema
-                for (const issue of report.getIssues()) {
+            // Adicionar comentários em linha para cada problema
+            for (const issue of report.getIssues()) {
                     try {
                         // Extrair o caminho relativo ao repositório
                         let relativeFilePath = path.relative(repositoryPath, issue.file);
@@ -396,13 +391,23 @@ export class AzureDevOpsRepository implements IRepository {
                         
                         this.logger.log(`Tentando adicionar comentário ao arquivo ${relativeFilePath} na linha ${issue.line}`);
                         
-                        // Comentar no arquivo específico e linha
-                        await this.addPullRequestComment(
-                            issue.message,
-                            relativeFilePath,
-                            issue.line
-                        );
-                        
+                        if (issue.responseFormat === 'json') {
+                            // Comentar no arquivo específico e linha
+                            await this.addPullRequestComment(
+                                issue.message,
+                                relativeFilePath,
+                                issue.line
+                            );
+                        }
+                        else if (issue.responseFormat === 'markdown') {
+                            // Comentar no arquivo específico e linha
+                            await this.addPullRequestComment(
+                                issue.message,
+                                relativeFilePath,
+                                issue.line
+                            );
+                        }
+
                         this.logger.log(`Comentário adicionado ao arquivo ${relativeFilePath} na linha ${issue.line}`);
                     } catch (commentError: any) {
                         this.logger.warn(`Não foi possível adicionar comentário ao arquivo: ${commentError.message}`);
@@ -416,7 +421,7 @@ export class AzureDevOpsRepository implements IRepository {
                             this.logger.error(`Também falhou ao adicionar comentário geral: ${generalCommentError.message}`);
                         }
                     }
-                }
+                
             }
             // Definir o status do PR baseado nos problemas encontrados
             // Deixar comentado neste momento a aprovação será feita manualmente

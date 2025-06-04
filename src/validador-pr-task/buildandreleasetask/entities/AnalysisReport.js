@@ -48,9 +48,16 @@ class AnalysisReport {
         }
         else {
             report += `## Problemas Encontrados (${this.issues.length})\n\n`;
-            this.issues.forEach(issue => {
-                report += `- ${issue.toString()}\n`;
-            });
+            if (this.issues.some(issue => issue.responseFormat === 'markdown')) {
+                this.issues.forEach(issue => {
+                    report += issue.message + '\n';
+                });
+            }
+            else {
+                this.issues.forEach(issue => {
+                    report += `- ${issue.toString()}\n`;
+                });
+            }
         }
         report += `\n\n*Gerado em: ${this.timestamp.toLocaleString()}*`;
         return report;

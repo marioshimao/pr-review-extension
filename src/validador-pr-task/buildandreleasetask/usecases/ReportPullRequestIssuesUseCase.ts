@@ -43,15 +43,9 @@ export class ReportPullRequestIssuesUseCase {
         failOnIssues: boolean = false
     ): Promise<boolean> {
         try {
-            let reportContent = "";
-            if (report.getIssues()[0].responseFormat !== 'markdown') {
-                // Pega a resposta em formato Markdown
-                reportContent = report.getIssues()[0].message;
-            }
-            else {
-                // Gerar o relatório em formato Markdown
-                reportContent = report.generateMarkdownReport();
-            }
+            // Gerar o relatório em formato Markdown
+            const reportContent = report.generateMarkdownReport();
+
             // Salvar o relatório em arquivo, se um caminho for fornecido
             if (outputFilePath) {
                 try {
