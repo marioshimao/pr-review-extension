@@ -12,8 +12,7 @@ import { ILogService } from '../interfaces/ILogService';
 export class OpenAICodeAnalyzer implements ICodeAnalyzer {
     private openai: OpenAI | AzureOpenAI;
     private logger: ILogService;
-    private usingDefaultPrompt: boolean = true;
-    private _azureConfig?: {
+        private _azureConfig?: {
         endpoint: string;
         apiVersion: string;
         deploymentName: string;
@@ -118,6 +117,7 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
         const maxRetries = 3;
         let retryCount = 0;
         const fileIssues: CodeIssue[] = [];
+        let usingDefaultPrompt = true;
 
         while (retryCount < maxRetries) {
             try {
@@ -128,7 +128,7 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
                 if (additionalPrompts && additionalPrompts.length > 0) {                    
                     const validPrompts = additionalPrompts.filter(prompt => prompt && prompt.trim() !== '');
                     if (validPrompts.length > 0) {
-                        this.usingDefaultPrompt = false;
+                        usingDefaultPrompt = false;
                         systemContent = validPrompts.map(p => `- ${p.trim()}`).join('\n');
                         this.logger.log(`Adicionando ${validPrompts.length} prompts adicionais à análise de ${file}`);
                     }
@@ -163,7 +163,8 @@ export class OpenAICodeAnalyzer implements ICodeAnalyzer {
 
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
-                    if (!this.usingDefaultPrompt) {
+                    this.logger.log(`usingDefaultPrompt: ${usingDefaultPrompt}`);
+                    if (!usingDefaultPrompt) {
                         try {
                             // Resposta no formato textual
                             const analysisResults = response.choices[0].message.content;

@@ -45,7 +45,6 @@ const CodeIssue_1 = require("../entities/CodeIssue");
 class OpenAICodeAnalyzer {
     openai;
     logger;
-    usingDefaultPrompt = true;
     _azureConfig;
     /**
      * Construtor para a classe OpenAICodeAnalyzer
@@ -120,6 +119,7 @@ class OpenAICodeAnalyzer {
         const maxRetries = 3;
         let retryCount = 0;
         const fileIssues = [];
+        let usingDefaultPrompt = true;
         while (retryCount < maxRetries) {
             try {
                 // Construir o conteúdo do prompt do sistema
@@ -128,7 +128,7 @@ class OpenAICodeAnalyzer {
                 if (additionalPrompts && additionalPrompts.length > 0) {
                     const validPrompts = additionalPrompts.filter(prompt => prompt && prompt.trim() !== '');
                     if (validPrompts.length > 0) {
-                        this.usingDefaultPrompt = false;
+                        usingDefaultPrompt = false;
                         systemContent = validPrompts.map(p => `- ${p.trim()}`).join('\n');
                         this.logger.log(`Adicionando ${validPrompts.length} prompts adicionais à análise de ${file}`);
                     }
@@ -160,7 +160,8 @@ class OpenAICodeAnalyzer {
                 }
                 // Processar a resposta
                 if (response.choices[0]?.message?.content) {
-                    if (!this.usingDefaultPrompt) {
+                    this.logger.log(`usingDefaultPrompt: ${usingDefaultPrompt}`);
+                    if (!usingDefaultPrompt) {
                         try {
                             // Resposta no formato textual
                             const analysisResults = response.choices[0].message.content;

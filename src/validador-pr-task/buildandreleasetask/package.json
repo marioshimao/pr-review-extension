@@ -1,6 +1,6 @@
 {
     "name": "validador-pr-task",
-    "version": "0.1.31",
+    "version": "0.1.33",
     "description": "Task para validação de PR com IA",
     "main": "index.js",
     "scripts": {
