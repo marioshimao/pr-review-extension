@@ -4,3 +4,5 @@ export * from './GitClient';
 export * from './PullRequestClient';
 export * from './WorkItemClient';
 export * from './PipelineClient';
+// Export interfaces
+export * from './interfaces';

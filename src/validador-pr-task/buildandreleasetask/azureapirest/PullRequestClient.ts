@@ -1,4 +1,5 @@
 import { AzureDevOpsApiClient } from './AzureDevOpsApiClient';
+import { CommentThreadStatus, CommentType, GitPullRequestCommentThread, GitPullRequestStatus, GitStatusState, IdentityRefWithVote } from './interfaces';
 
 /**
  * Interface for pull request comment thread position
@@ -206,5 +207,94 @@ export class PullRequestClient extends AzureDevOpsApiClient {
             `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}`,
             updateData
         );
+    }
+
+    /**
+     * Create a thread with a comment on a specific file and line in a pull request
+     * @param thread - Thread data
+     * @param repositoryId - ID of the repository
+     * @param pullRequestId - ID of the pull request
+     * @param project - Project name
+     * @returns Promise with created thread
+     */
+    async createThread(
+        thread: GitPullRequestCommentThread,
+        repositoryId: string,
+        pullRequestId: number,
+        project: string
+    ): Promise<CommentThreadResponse> {
+        return this.post<CommentThreadResponse>(
+            `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/threads`,
+            thread
+        );
+    }
+
+    /**
+     * Create a pull request status
+     * @param status - Status data
+     * @param repositoryId - ID of the repository
+     * @param pullRequestId - ID of the pull request
+     * @param project - Project name
+     * @returns Promise with created status
+     */
+    async createPullRequestStatus(
+        status: GitPullRequestStatus,
+        repositoryId: string,
+        pullRequestId: number,
+        project: string
+    ): Promise<any> {
+        return this.post<any>(
+            `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/statuses`,
+            status
+        );
+    }
+
+    /**
+     * Create or update a pull request reviewer with vote
+     * @param reviewer - Reviewer data with vote
+     * @param repositoryId - ID of the repository
+     * @param pullRequestId - ID of the pull request
+     * @param reviewerId - ID of the reviewer
+     * @param project - Project name
+     * @returns Promise with updated reviewer
+     */
+    async createPullRequestReviewer(
+        reviewer: IdentityRefWithVote,
+        repositoryId: string,
+        pullRequestId: number,
+        reviewerId: string,
+        project: string
+    ): Promise<IdentityRefWithVote> {
+        return this.put<IdentityRefWithVote>(
+            `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/reviewers/${reviewerId}`,
+            reviewer
+        );
+    }
+
+    /**
+     * Make a PUT request to the Azure DevOps API
+     * @param path - API path (without base URL)
+     * @param body - Request body
+     * @param queryParams - Optional query parameters
+     * @returns Promise with response data
+     */
+    protected async put<T>(path: string, body: any, queryParams: Record<string, string> = {}): Promise<T> {
+        const url = this.buildUrl(path, queryParams);
+        
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': this.getAuthHeader(),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+        }
+
+        return await response.json() as T;
     }
 }

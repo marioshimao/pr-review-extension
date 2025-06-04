@@ -1,134 +1,39 @@
-import { AzureDevOpsApiClient } from './AzureDevOpsApiClient';
-import { GitPullRequestIteration, GitPullRequestIterationChanges, VersionControlChangeType } from './interfaces';
-
-/**
- * Interface for Git repository
- */
-export interface Repository {
-    id: string;
-    name: string;
-    url: string;
-    project: {
-        id: string;
-        name: string;
-    };
-    defaultBranch: string;
-    size: number;
-    remoteUrl: string;
-}
-
-/**
- * Interface for Git branch
- */
-export interface Branch {
-    name: string;
-    objectId: string;
-    creator: {
-        displayName: string;
-        url: string;
-        id: string;
-        uniqueName: string;
-    };
-    url: string;
-}
-
-/**
- * Interface for Git commit
- */
-export interface Commit {
-    commitId: string;
-    author: {
-        name: string;
-        email: string;
-        date: string;
-    };
-    committer: {
-        name: string;
-        email: string;
-        date: string;
-    };
-    comment: string;
-    url: string;
-    changeCounts: {
-        add: number;
-        edit: number;
-        delete: number;
-    };
-}
-
-/**
- * Interface for file change item
- */
-export interface GitItem {
-    objectId: string;
-    gitObjectType: string;
-    commitId: string;
-    path: string;
-    isFolder: boolean;
-    content?: string;
-    contentMetadata?: {
-        fileName: string;
-        extension: string;
-        contentType: string;
-    };
-}
-
-/**
- * Interface for diff between two commits
- */
-export interface GitDiff {
-    changes: Array<{
-        item: {
-            objectId: string;
-            originalObjectId: string;
-            gitObjectType: string;
-            commitId: string;
-            path: string;
-        };
-        changeType: string; // "add", "edit", "delete"
-    }>;
-    commonCommit: string;
-    aheadCount: number;
-    behindCount: number;
-}
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GitClient = void 0;
+const AzureDevOpsApiClient_1 = require("./AzureDevOpsApiClient");
 /**
  * A client for interacting with Azure DevOps Git REST API
  */
-export class GitClient extends AzureDevOpsApiClient {
+class GitClient extends AzureDevOpsApiClient_1.AzureDevOpsApiClient {
     /**
      * Get repository by name or ID
      * @param repositoryIdOrName - ID or name of the repository
      * @returns Promise with repository details
      */
-    async getRepository(repositoryIdOrName: string): Promise<Repository> {
-        return this.get<Repository>(`/git/repositories/${repositoryIdOrName}`);
+    async getRepository(repositoryIdOrName) {
+        return this.get(`/git/repositories/${repositoryIdOrName}`);
     }
-
     /**
      * Get all repositories in the project
      * @returns Promise with repositories
      */
-    async getRepositories(): Promise<{ value: Repository[] }> {
-        return this.get<{ value: Repository[] }>('/git/repositories');
+    async getRepositories() {
+        return this.get('/git/repositories');
     }
-
     /**
      * Get branches for a repository
      * @param repositoryId - ID of the repository
      * @param filter - Optional filter string (e.g., "heads/feature")
      * @returns Promise with branches
      */
-    async getBranches(repositoryId: string, filter?: string): Promise<{ value: Branch[] }> {
-        const queryParams: Record<string, string> = {};
-        
+    async getBranches(repositoryId, filter) {
+        const queryParams = {};
         if (filter) {
             queryParams.filter = filter;
         }
-        
-        return this.get<{ value: Branch[] }>(`/git/repositories/${repositoryId}/refs`, queryParams);
+        return this.get(`/git/repositories/${repositoryId}/refs`, queryParams);
     }
-
     /**
      * Get commits for a repository
      * @param repositoryId - ID of the repository
@@ -136,30 +41,25 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param top - Optional number of commits to return
      * @returns Promise with commits
      */
-    async getCommits(repositoryId: string, branch?: string, top?: number): Promise<{ value: Commit[] }> {
-        const queryParams: Record<string, string> = {};
-        
+    async getCommits(repositoryId, branch, top) {
+        const queryParams = {};
         if (branch) {
             queryParams.searchCriteria = JSON.stringify({ itemVersion: { version: branch } });
         }
-        
         if (top) {
             queryParams.$top = top.toString();
         }
-        
-        return this.get<{ value: Commit[] }>(`/git/repositories/${repositoryId}/commits`, queryParams);
+        return this.get(`/git/repositories/${repositoryId}/commits`, queryParams);
     }
-
     /**
      * Get a specific commit
      * @param repositoryId - ID of the repository
      * @param commitId - ID of the commit
      * @returns Promise with commit details
      */
-    async getCommit(repositoryId: string, commitId: string): Promise<Commit> {
-        return this.get<Commit>(`/git/repositories/${repositoryId}/commits/${commitId}`);
+    async getCommit(repositoryId, commitId) {
+        return this.get(`/git/repositories/${repositoryId}/commits/${commitId}`);
     }
-
     /**
      * Get items (files/folders) in a repository
      * @param repositoryId - ID of the repository
@@ -168,29 +68,19 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param version - Optional version (commit ID, branch name)
      * @returns Promise with items
      */
-    async getItems(
-        repositoryId: string, 
-        path?: string, 
-        recursionLevel?: string,
-        version?: string
-    ): Promise<{ value: GitItem[] }> {
-        const queryParams: Record<string, string> = {};
-        
+    async getItems(repositoryId, path, recursionLevel, version) {
+        const queryParams = {};
         if (path) {
             queryParams.path = path;
         }
-        
         if (recursionLevel) {
             queryParams.recursionLevel = recursionLevel;
         }
-        
         if (version) {
             queryParams['versionDescriptor.version'] = version;
         }
-        
-        return this.get<{ value: GitItem[] }>(`/git/repositories/${repositoryId}/items`, queryParams);
+        return this.get(`/git/repositories/${repositoryId}/items`, queryParams);
     }
-
     /**
      * Get content of a specific file
      * @param repositoryId - ID of the repository
@@ -198,20 +88,17 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param version - Optional version (commit ID, branch name)
      * @returns Promise with file content
      */
-    async getFileContent(repositoryId: string, path: string, version?: string): Promise<string> {
-        const queryParams: Record<string, string> = {
+    async getFileContent(repositoryId, path, version) {
+        const queryParams = {
             path: path,
             includeContent: 'true'
         };
-        
         if (version) {
             queryParams['versionDescriptor.version'] = version;
         }
-        
-        const response = await this.get<GitItem>(`/git/repositories/${repositoryId}/items`, queryParams);
+        const response = await this.get(`/git/repositories/${repositoryId}/items`, queryParams);
         return response.content || '';
     }
-
     /**
      * Compare two branches/commits and get the diff
      * @param repositoryId - ID of the repository
@@ -219,21 +106,15 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param targetVersion - Target version (commit ID, branch name)
      * @returns Promise with diff details
      */
-    async getDiff(
-        repositoryId: string,
-        baseVersion: string,
-        targetVersion: string
-    ): Promise<GitDiff> {
+    async getDiff(repositoryId, baseVersion, targetVersion) {
         const queryParams = {
             'baseVersionType': 'commit',
             'baseVersion': baseVersion,
             'targetVersionType': 'commit',
             'targetVersion': targetVersion
         };
-        
-        return this.get<GitDiff>(`/git/repositories/${repositoryId}/diffs/commits`, queryParams);
+        return this.get(`/git/repositories/${repositoryId}/diffs/commits`, queryParams);
     }
-
     /**
      * Get pull request iterations
      * @param repositoryId - ID of the repository
@@ -241,16 +122,9 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param project - Project name
      * @returns Promise with pull request iterations
      */
-    async getPullRequestIterations(
-        repositoryId: string,
-        pullRequestId: number,
-        project: string
-    ): Promise<GitPullRequestIteration[]> {
-        return this.get<GitPullRequestIteration[]>(
-            `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/iterations`
-        );
+    async getPullRequestIterations(repositoryId, pullRequestId, project) {
+        return this.get(`/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/iterations`);
     }
-
     /**
      * Get pull request iteration changes
      * @param repositoryId - ID of the repository
@@ -259,17 +133,9 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param project - Project name
      * @returns Promise with pull request iteration changes
      */
-    async getPullRequestIterationChanges(
-        repositoryId: string,
-        pullRequestId: number,
-        iterationId: number,
-        project: string
-    ): Promise<GitPullRequestIterationChanges> {
-        return this.get<GitPullRequestIterationChanges>(
-            `/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/iterations/${iterationId}/changes`
-        );
+    async getPullRequestIterationChanges(repositoryId, pullRequestId, iterationId, project) {
+        return this.get(`/git/repositories/${repositoryId}/pullRequests/${pullRequestId}/iterations/${iterationId}/changes`);
     }
-
     /**
      * Get item content from repository
      * @param repositoryId - ID of the repository
@@ -278,41 +144,22 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param versionDescriptor - Version descriptor
      * @returns Promise with file content as stream
      */
-    async getItemContent(
-        repositoryId: string,
-        path: string,
-        project?: string,
-        scopePath?: string,
-        recursionLevel?: string,
-        includeContentMetadata?: boolean,
-        latestProcessedChange?: boolean,
-        includeContent?: boolean,
-        versionDescriptor?: {
-            version?: string,
-            versionOptions?: number,
-            versionType?: number
-        }
-    ): Promise<NodeJS.ReadableStream> {
-        const queryParams: Record<string, string> = {
+    async getItemContent(repositoryId, path, project, scopePath, recursionLevel, includeContentMetadata, latestProcessedChange, includeContent, versionDescriptor) {
+        const queryParams = {
             'path': path,
             'includeContent': includeContent ? 'true' : 'false'
         };
-        
         if (versionDescriptor?.version) {
             queryParams['versionDescriptor.version'] = versionDescriptor.version;
         }
-        
         if (versionDescriptor?.versionOptions !== undefined) {
             queryParams['versionDescriptor.versionOptions'] = versionDescriptor.versionOptions.toString();
         }
-        
         if (versionDescriptor?.versionType !== undefined) {
             queryParams['versionDescriptor.versionType'] = versionDescriptor.versionType.toString();
         }
-        
         // Construct the URL
         const url = this.buildUrl(`/git/repositories/${repositoryId}/items`, queryParams);
-        
         // Make a direct fetch request to get the raw content as a stream
         const response = await fetch(url, {
             method: 'GET',
@@ -321,13 +168,11 @@ export class GitClient extends AzureDevOpsApiClient {
                 'Accept': '*/*'
             }
         });
-
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
-        }        // Return the response body as a readable stream
-        return response.body as unknown as NodeJS.ReadableStream;
+        } // Return the response body as a readable stream
+        return response.body;
     }
-
     /**
      * Build URL with query parameters
      * Override from parent class to make it accessible here
@@ -335,15 +180,14 @@ export class GitClient extends AzureDevOpsApiClient {
      * @param queryParams - Query parameters
      * @returns Complete URL
      */
-    protected buildUrl(path: string, queryParams: Record<string, string> = {}): string {
+    buildUrl(path, queryParams = {}) {
         // Add API version to query params
         const allParams = { 'api-version': this.apiVersion, ...queryParams };
-        
         // Build query string
         const queryString = Object.entries(allParams)
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
-        
         return `${this.baseUrl}${path}?${queryString}`;
     }
 }
+exports.GitClient = GitClient;
