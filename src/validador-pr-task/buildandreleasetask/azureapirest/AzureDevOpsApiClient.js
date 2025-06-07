@@ -18,7 +18,7 @@ class AzureDevOpsApiClient {
      * @param personalAccessToken - Personal Access Token for authentication
      * @param apiVersion - API version (default: '7.2')
      * @param maxRetries - Maximum number of retry attempts (default: 3)
-     */ constructor(organization, project, personalAccessToken, apiVersion = '7.2', maxRetries = 3) {
+     */ constructor(organization, project, personalAccessToken, apiVersion = '7.1', maxRetries = 3) {
         this.apiVersion = apiVersion;
         this.organization = organization;
         this.project = project;
@@ -155,6 +155,34 @@ class AzureDevOpsApiClient {
             });
             if (!response.ok) {
                 throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+            }
+            return await response.json();
+        });
+    }
+    /**
+     * Make a DELETE request to the Azure DevOps API with retry
+     * @param path - API path (without base URL)
+     * @param queryParams - Optional query parameters
+     * @returns Promise with response data
+     */
+    async delete(path, queryParams = {}) {
+        return this.executeWithRetry(async () => {
+            const url = this.buildUrl(path, queryParams);
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+            }
+            // For cases where DELETE returns no content
+            const contentLength = response.headers.get('content-length');
+            if (contentLength === '0' || !contentLength) {
+                return {};
             }
             return await response.json();
         });

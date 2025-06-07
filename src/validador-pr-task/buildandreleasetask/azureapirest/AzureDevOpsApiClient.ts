@@ -19,7 +19,7 @@ export class AzureDevOpsApiClient {
         organization: string,
         project: string,
         personalAccessToken: string,
-        protected apiVersion: string = '7.2',
+        protected apiVersion: string = '7.1',
         maxRetries: number = 3
     ) {
         this.organization = organization;
@@ -180,6 +180,39 @@ export class AzureDevOpsApiClient {
                 throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
             }
     
+            return await response.json() as T;
+        });
+    }
+
+    /**
+     * Make a DELETE request to the Azure DevOps API with retry
+     * @param path - API path (without base URL)
+     * @param queryParams - Optional query parameters
+     * @returns Promise with response data
+     */
+    protected async delete<T>(path: string, queryParams: Record<string, string> = {}): Promise<T> {
+        return this.executeWithRetry(async () => {
+            const url = this.buildUrl(path, queryParams);
+            
+            const response = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': this.getAuthHeader(),
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}: ${await response.text()}`);
+            }
+    
+            // For cases where DELETE returns no content
+            const contentLength = response.headers.get('content-length');
+            if (contentLength === '0' || !contentLength) {
+                return {} as T;
+            }
+            
             return await response.json() as T;
         });
     }

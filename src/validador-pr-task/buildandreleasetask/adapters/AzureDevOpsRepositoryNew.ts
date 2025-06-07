@@ -117,13 +117,10 @@ export class AzureDevOpsRepositoryNew implements IRepository {
             // Garantir que o diretório de destino exista
             if (!fs.existsSync(targetDirectory)) {
                 fs.mkdirSync(targetDirectory, { recursive: true });
-            }
-
-            // Get all iterations first
+            }            // Get all iterations first
             const iterations = await this.gitClient.getPullRequestIterations(
                 this.repositoryId,
-                this.pullRequestId,
-                this.projectName
+                this.pullRequestId
             );
             
             if (!iterations || iterations.length === 0) {
@@ -132,13 +129,14 @@ export class AzureDevOpsRepositoryNew implements IRepository {
             }
             
             const latestIteration = iterations[iterations.length - 1];
+            this.logger.info(`Encontradas ${iterations.length} iterações no PR.`);
+            this.logger.info(`Usando a última iteração: ${latestIteration.id} com data ${latestIteration.createdDate}`);
             
             // Obter as alterações no PR
             const changes = await this.gitClient.getPullRequestIterationChanges(
                 this.repositoryId,
                 this.pullRequestId,
-                latestIteration.id!,
-                this.projectName
+                latestIteration?.id!
             );
 
             if (!changes || !changes.changeEntries) {
@@ -150,8 +148,12 @@ export class AzureDevOpsRepositoryNew implements IRepository {
 
             // Processar cada arquivo alterado
             for (const change of changes.changeEntries || []) {
+
+                this.logger.log(`Processando alteração: ${change.item?.path} (tipo: ${VersionControlChangeType[change.changeType]})`);
+                                
                 // Pular se não for um arquivo ou se foi excluído
                 if (change.item?.isFolder || change.changeType === VersionControlChangeType.Delete) {
+                    this.logger.log(`Ignorando alteração: ${change.item?.path} (tipo: ${VersionControlChangeType[change.changeType]})`);
                     continue;
                 }
 
@@ -252,11 +254,9 @@ export class AzureDevOpsRepositoryNew implements IRepository {
                         rightFileStart: {
                             line: lineNumber,
                             offset: 1
-                        }
-                    }
+                        }                    }
                 };
-
-                await this.pullRequestClient.createThread(
+                  await this.pullRequestClient.createThread(
                     thread,
                     this.repositoryId,
                     this.pullRequestId,
@@ -275,7 +275,7 @@ export class AzureDevOpsRepositoryNew implements IRepository {
                     ],
                     status: CommentThreadStatus.Active
                 };
-
+                
                 await this.pullRequestClient.createThread(
                     thread,
                     this.repositoryId,

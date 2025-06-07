@@ -111,16 +111,15 @@ class AzureDevOpsRepositoryNew {
             // Garantir que o diretório de destino exista
             if (!fs.existsSync(targetDirectory)) {
                 fs.mkdirSync(targetDirectory, { recursive: true });
-            }
-            // Get all iterations first
-            const iterations = await this.gitClient.getPullRequestIterations(this.repositoryId, this.pullRequestId, this.projectName);
+            } // Get all iterations first
+            const iterations = await this.gitClient.getPullRequestIterations(this.repositoryId, this.pullRequestId);
             if (!iterations || iterations.length === 0) {
                 this.logger.warn('Nenhuma iteração encontrada no PR.');
                 return [];
             }
             const latestIteration = iterations[iterations.length - 1];
             // Obter as alterações no PR
-            const changes = await this.gitClient.getPullRequestIterationChanges(this.repositoryId, this.pullRequestId, latestIteration.id, this.projectName);
+            const changes = await this.gitClient.getPullRequestIterationChanges(this.repositoryId, this.pullRequestId, latestIteration?.id);
             if (!changes || !changes.changeEntries) {
                 this.logger.warn('Nenhuma alteração encontrada no PR.');
                 return [];
